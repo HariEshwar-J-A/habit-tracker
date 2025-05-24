@@ -15,6 +15,7 @@ interface AuthState {
   logout: () => Promise<void>;
   verifyEmail: (token: string) => Promise<void>;
   loginWithProvider: (provider: 'google' | 'github') => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -24,93 +25,149 @@ export const useAuthStore = create<AuthState>()(
       user: null,
 
       login: async (email: string, password: string) => {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) {
-          throw error;
+        if (!email || !password) {
+          throw new Error('Email and password are required');
         }
 
-        if (data.user) {
-          set({
-            isAuthenticated: true,
-            user: {
-              id: data.user.id,
-              email: data.user.email!,
-              isEmailVerified: data.user.email_confirmed_at !== null,
-            },
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password,
           });
+
+          if (error) {
+            if (error.message === 'Invalid login credentials') {
+              throw new Error('Invalid email or password. Please try again.');
+            }
+            throw error;
+          }
+
+          if (data.user) {
+            set({
+              isAuthenticated: true,
+              user: {
+                id: data.user.id,
+                email: data.user.email!,
+                isEmailVerified: data.user.email_confirmed_at !== null,
+              },
+            });
+          }
+        } catch (error) {
+          console.error('Login error:', error);
+          throw error;
         }
       },
 
       signup: async (email: string, password: string) => {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-
-        if (error) {
-          throw error;
+        if (!email || !password) {
+          throw new Error('Email and password are required');
         }
 
-        if (data.user) {
-          set({
-            isAuthenticated: true,
-            user: {
-              id: data.user.id,
-              email: data.user.email!,
-              isEmailVerified: data.user.email_confirmed_at !== null,
-            },
+        if (password.length < 6) {
+          throw new Error('Password must be at least 6 characters long');
+        }
+
+        try {
+          const { data, error } = await supabase.auth.signUp({
+            email: email.trim(),
+            password,
           });
+
+          if (error) {
+            throw error;
+          }
+
+          if (data.user) {
+            set({
+              isAuthenticated: true,
+              user: {
+                id: data.user.id,
+                email: data.user.email!,
+                isEmailVerified: data.user.email_confirmed_at !== null,
+              },
+            });
+          }
+        } catch (error) {
+          console.error('Signup error:', error);
+          throw error;
         }
       },
 
       logout: async () => {
-        const { error } = await supabase.auth.signOut();
-        
-        if (error) {
+        try {
+          const { error } = await supabase.auth.signOut();
+          
+          if (error) {
+            throw error;
+          }
+
+          set({
+            isAuthenticated: false,
+            user: null,
+          });
+        } catch (error) {
+          console.error('Logout error:', error);
           throw error;
         }
-
-        set({
-          isAuthenticated: false,
-          user: null,
-        });
       },
 
       verifyEmail: async (token: string) => {
-        const { data, error } = await supabase.auth.verifyOtp({
-          token_hash: token,
-          type: 'email',
-        });
+        try {
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'email',
+          });
 
-        if (error) {
+          if (error) {
+            throw error;
+          }
+
+          if (data.user) {
+            set((state) => ({
+              user: state.user ? {
+                ...state.user,
+                isEmailVerified: true,
+              } : null,
+            }));
+          }
+        } catch (error) {
+          console.error('Email verification error:', error);
           throw error;
         }
+      },
 
-        if (data.user) {
-          set((state) => ({
-            user: state.user ? {
-              ...state.user,
-              isEmailVerified: true,
-            } : null,
-          }));
+      resetPassword: async (email: string) => {
+        if (!email) {
+          throw new Error('Email is required');
+        }
+
+        try {
+          const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+            redirectTo: `${window.location.origin}/reset-password`,
+          });
+
+          if (error) {
+            throw error;
+          }
+        } catch (error) {
+          console.error('Password reset error:', error);
+          throw error;
         }
       },
 
       loginWithProvider: async (provider: 'google' | 'github') => {
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider,
-        });
+        try {
+          const { data, error } = await supabase.auth.signInWithOAuth({
+            provider,
+          });
 
-        if (error) {
+          if (error) {
+            throw error;
+          }
+        } catch (error) {
+          console.error('OAuth login error:', error);
           throw error;
         }
-
-        // OAuth redirects to the provider, so we don't set state here
-        // State will be updated when the user returns via the auth listener
       },
     }),
     {
@@ -125,11 +182,11 @@ export const useAuthStore = create<AuthState>()(
 
 // Set up auth state listener
 supabase.auth.onAuthStateChange((event, session) => {
-  const store = useAuthStore.getState();
-  
   if (event === 'SIGNED_IN' && session?.user) {
+    const store = useAuthStore.getState();
     store.login(session.user.email!, ''); // Password not needed as user is already authenticated
   } else if (event === 'SIGNED_OUT') {
+    const store = useAuthStore.getState();
     store.logout();
   }
 });
