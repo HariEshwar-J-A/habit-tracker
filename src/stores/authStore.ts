@@ -16,6 +16,7 @@ interface AuthState {
   verifyEmail: (token: string) => Promise<void>;
   loginWithProvider: (provider: 'google' | 'github') => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  setUser: (user: User | null) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -23,6 +24,24 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       isAuthenticated: false,
       user: null,
+
+      setUser: (user: User | null) => {
+        if (user) {
+          set({
+            isAuthenticated: true,
+            user: {
+              id: user.id,
+              email: user.email!,
+              isEmailVerified: user.email_confirmed_at !== null,
+            },
+          });
+        } else {
+          set({
+            isAuthenticated: false,
+            user: null,
+          });
+        }
+      },
 
       login: async (email: string, password: string) => {
         if (!email || !password) {
@@ -182,11 +201,11 @@ export const useAuthStore = create<AuthState>()(
 
 // Set up auth state listener
 supabase.auth.onAuthStateChange((event, session) => {
+  const store = useAuthStore.getState();
+  
   if (event === 'SIGNED_IN' && session?.user) {
-    const store = useAuthStore.getState();
-    store.login(session.user.email!, ''); // Password not needed as user is already authenticated
+    store.setUser(session.user);
   } else if (event === 'SIGNED_OUT') {
-    const store = useAuthStore.getState();
-    store.logout();
+    store.setUser(null);
   }
 });
