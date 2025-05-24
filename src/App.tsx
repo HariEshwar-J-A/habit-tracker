@@ -10,7 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Layout from './components/layout/Layout';
 import { useThemeStore } from './stores/themeStore';
 import { useAuthStore } from './stores/authStore';
-import { db } from './db/db';
+import { supabase } from './lib/supabase';
 
 // Lazy load pages to improve initial load performance
 const Auth = lazy(() => import('./pages/Auth'));
@@ -25,36 +25,37 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Initialize the theme from IndexedDB
+  // Initialize theme and check auth state
   useEffect(() => {
-    const loadTheme = async () => {
+    const initializeApp = async () => {
       try {
-        // Initialize the database
-        await db.open();
-        // Initialize theme from stored preferences
         await initializeTheme();
+        
+        // Check current auth session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session && location.pathname !== '/auth') {
+          navigate('/auth');
+        }
       } catch (error) {
         console.error('Failed to initialize app:', error);
       }
     };
 
-    loadTheme();
-  }, [initializeTheme]);
+    initializeApp();
+  }, [initializeTheme, navigate, location.pathname]);
 
-  // Redirect to auth page if not authenticated
+  // Set up auth state listener
   useEffect(() => {
-    if (!isAuthenticated && location.pathname !== '/auth') {
-      navigate('/auth');
-    }
-  }, [isAuthenticated, location.pathname, navigate]);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate('/auth');
+      }
+    });
 
-  // Show email verification warning if needed
-  useEffect(() => {
-    if (user && !user.isEmailVerified) {
-      // You could show a warning banner or modal here
-      console.log('Email not verified');
-    }
-  }, [user]);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   return (
     <ThemeProvider theme={theme}>
