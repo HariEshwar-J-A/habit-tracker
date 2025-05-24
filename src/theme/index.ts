@@ -166,6 +166,44 @@ export const createAppTheme = (mode: PaletteMode, colorName: string): Theme => {
             width: 42,
             height: 26,
             padding: 0,
+            margin: 8,
+          },
+          switchBase: {
+            padding: 1,
+            '&.Mui-checked': {
+              transform: 'translateX(16px)',
+              color: '#fff',
+              '& + .MuiSwitch-track': {
+                backgroundColor: color.main,
+                opacity: 1,
+                border: 0,
+              },
+              '&.Mui-disabled + .MuiSwitch-track': {
+                opacity: 0.5,
+              },
+            },
+            '&.Mui-focusVisible .MuiSwitch-thumb': {
+              color: color.main,
+              border: '6px solid #fff',
+            },
+            '&.Mui-disabled .MuiSwitch-thumb': {
+              color: mode === 'light' ? '#e0e0e0' : '#424242',
+            },
+            '&.Mui-disabled + .MuiSwitch-track': {
+              opacity: mode === 'light' ? 0.7 : 0.3,
+            },
+          },
+          thumb: {
+            width: 24,
+            height: 24,
+            boxShadow: 'none',
+          },
+          track: {
+            borderRadius: 13,
+            border: `1px solid ${mode === 'light' ? '#e0e0e0' : '#424242'}`,
+            backgroundColor: mode === 'light' ? '#e0e0e0' : '#424242',
+            opacity: 1,
+            transition: 'background-color 300ms cubic-bezier(0.4, 0, 0.2, 1)',
           },
         },
       },
