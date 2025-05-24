@@ -199,7 +199,7 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
           </FormControl>
           
           <Box sx={{ 
-            p: 2, 
+            p: 3, 
             bgcolor: theme.palette.mode === 'light' ? 'grey.100' : 'grey.900',
             borderRadius: 1,
             border: `1px solid ${theme.palette.divider}`
