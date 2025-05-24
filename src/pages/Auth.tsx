@@ -26,8 +26,8 @@ import {
   Shield,
   Database,
   Users,
-  Google
 } from 'lucide-react';
+import GoogleIcon from '@mui/icons-material/Google';
 import { useAuthStore } from '../stores/authStore';
 import { useThemeStore } from '../stores/themeStore';
 
@@ -237,7 +237,7 @@ const Auth = () => {
                   <Button
                     fullWidth
                     variant="outlined"
-                    startIcon={<Google />}
+                    startIcon={<GoogleIcon />}
                     onClick={() => handleOAuthLogin('google')}
                   >
                     Google
