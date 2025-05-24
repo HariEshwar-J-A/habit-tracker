@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardActionArea, Typography, Box, Checkbox, CircularProgress } from '@mui/material';
 import { CheckCircle, Circle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useAnimation } from 'framer-motion';
 import { Habit } from '../../types';
 import { useHabitStore } from '../../stores/habitStore';
+import useSound from 'use-sound';
 
 interface HabitItemProps {
   habit: Habit;
@@ -13,9 +14,45 @@ interface HabitItemProps {
 const HabitItem = ({ habit, onClick }: HabitItemProps) => {
   const [checking, setChecking] = useState(false);
   const { toggleHabitCompletion } = useHabitStore();
+  const controls = useAnimation();
+  
+  // Sound effects
+  const [playComplete] = useSound('/sounds/complete.mp3', { volume: 0.5 });
+  const [playUndo] = useSound('/sounds/undo.mp3', { volume: 0.5 });
   
   // Get today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split('T')[0];
+
+  // Glowing animation when it's reminder time
+  useEffect(() => {
+    if (habit.reminderEnabled && habit.reminderTime) {
+      const now = new Date();
+      const [hours, minutes] = habit.reminderTime.split(':').map(Number);
+      const reminderTime = new Date();
+      reminderTime.setHours(hours, minutes, 0, 0);
+
+      // Check if current time is within 5 minutes of reminder time
+      const timeDiff = Math.abs(now.getTime() - reminderTime.getTime());
+      const isReminderTime = timeDiff <= 5 * 60 * 1000; // 5 minutes
+
+      if (isReminderTime) {
+        controls.start({
+          boxShadow: [
+            '0 0 0 0 rgba(255,255,255,0)',
+            '0 0 20px 10px rgba(255,255,255,0.5)',
+            '0 0 0 0 rgba(255,255,255,0)'
+          ],
+          transition: {
+            duration: 2,
+            repeat: Infinity,
+            ease: 'easeInOut'
+          }
+        });
+      } else {
+        controls.stop();
+      }
+    }
+  }, [habit.reminderEnabled, habit.reminderTime, controls]);
   
   const handleCheckToggle = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
@@ -25,6 +62,11 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
     setChecking(true);
     try {
       await toggleHabitCompletion(habit.id as number, today);
+      if (habit.currentStreak > 0) {
+        playUndo();
+      } else {
+        playComplete();
+      }
     } finally {
       setChecking(false);
     }
@@ -34,6 +76,7 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
     <motion.div
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
+      animate={controls}
     >
       <Card 
         sx={{ 

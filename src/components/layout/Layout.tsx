@@ -12,16 +12,24 @@ import {
   ListItemIcon, 
   ListItemText, 
   useMediaQuery, 
-  useTheme 
+  useTheme,
+  Menu,
+  MenuItem,
+  Avatar,
+  Divider
 } from '@mui/material';
 import { 
   Menu as MenuIcon, 
   Home as HomeIcon, 
   BarChart as StatsIcon, 
-  Settings as SettingsIcon, 
-  X as CloseIcon 
+  Settings as SettingsIcon,
+  X as CloseIcon,
+  LogOut,
+  User
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuthStore } from '../../stores/authStore';
+import { toast } from 'react-toastify';
 
 interface LayoutProps {
   children: ReactNode;
@@ -33,8 +41,10 @@ const Layout = ({ children }: LayoutProps) => {
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -45,6 +55,25 @@ const Layout = ({ children }: LayoutProps) => {
     if (isMobile) {
       setMobileOpen(false);
     }
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success('Logged out successfully');
+      navigate('/auth');
+    } catch (error) {
+      toast.error('Failed to logout');
+    }
+    handleMenuClose();
   };
 
   const getPageTitle = () => {
@@ -155,12 +184,42 @@ const Layout = ({ children }: LayoutProps) => {
             transition={{ duration: 0.3 }}
             style={{ width: '100%' }}
           >
-            <Typography variant="h6" noWrap component="div">
-              {getPageTitle()}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="h6" noWrap component="div">
+                {getPageTitle()}
+              </Typography>
+              <IconButton onClick={handleMenuOpen} size="small">
+                <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main }}>
+                  {user?.email?.charAt(0).toUpperCase()}
+                </Avatar>
+              </IconButton>
+            </Box>
           </motion.div>
         </Toolbar>
       </AppBar>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        onClick={handleMenuClose}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        <MenuItem disabled>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <User size={16} style={{ marginRight: 8 }} />
+            {user?.email}
+          </Box>
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={handleLogout}>
+          <Box sx={{ display: 'flex', alignItems: 'center', color: 'error.main' }}>
+            <LogOut size={16} style={{ marginRight: 8 }} />
+            Logout
+          </Box>
+        </MenuItem>
+      </Menu>
 
       {/* Drawer for navigation */}
       <Box

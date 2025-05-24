@@ -15,10 +15,13 @@ import {
   Switch, 
   Stack,
   Typography,
-  useTheme
+  useTheme,
+  CircularProgress
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { useHabitStore } from '../../stores/habitStore';
+import { toast } from 'react-toastify';
+import useSound from 'use-sound';
 
 // Color options
 const colorOptions = [
@@ -52,6 +55,10 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
   const [target, setTarget] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // Sound effects
+  const [playSuccess] = useSound('/sounds/success.mp3', { volume: 0.5 });
+  const [playError] = useSound('/sounds/error.mp3', { volume: 0.5 });
   
   const handleFrequencyChange = (event: SelectChangeEvent) => {
     setFrequency(event.target.value as 'daily' | 'weekly' | 'monthly' | 'custom');
@@ -68,6 +75,7 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
   const handleSubmit = async () => {
     if (!name.trim()) {
       setError('Please enter a habit name');
+      playError();
       return;
     }
     
@@ -85,12 +93,17 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
         target
       });
       
+      playSuccess();
+      toast.success('Habit created successfully!');
+      
       // Reset form and close dialog
       resetForm();
       onClose();
     } catch (error) {
       console.error('Failed to add habit:', error);
       setError('Failed to add habit. Please try again.');
+      playError();
+      toast.error('Failed to create habit');
     } finally {
       setIsSubmitting(false);
     }
@@ -111,7 +124,7 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
     resetForm();
     onClose();
   };
-  
+
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <DialogTitle>Add New Habit</DialogTitle>
@@ -230,6 +243,7 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
           onClick={handleSubmit} 
           variant="contained" 
           disabled={isSubmitting}
+          startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
         >
           {isSubmitting ? 'Adding...' : 'Add Habit'}
         </Button>

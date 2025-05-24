@@ -10,7 +10,7 @@ interface AuthState {
   } | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   verifyEmail: (token: string) => Promise<void>;
   loginWithProvider: (provider: 'google' | 'github') => Promise<void>;
 }
@@ -45,10 +45,15 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      logout: () => {
-        set({
-          isAuthenticated: false,
-          user: null
+      logout: async () => {
+        return new Promise<void>((resolve) => {
+          setTimeout(() => {
+            set({
+              isAuthenticated: false,
+              user: null
+            });
+            resolve();
+          }, 500); // Simulate API delay
         });
       },
 
