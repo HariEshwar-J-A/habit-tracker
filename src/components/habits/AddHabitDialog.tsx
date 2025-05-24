@@ -199,9 +199,8 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
           </FormControl>
           
           <Box sx={{ 
-            mt: 2, 
             p: 2, 
-            bgcolor: theme.palette.background.default,
+            bgcolor: theme.palette.mode === 'light' ? 'grey.100' : 'grey.900',
             borderRadius: 1,
             border: `1px solid ${theme.palette.divider}`
           }}>
@@ -210,9 +209,11 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
                 <Switch
                   checked={reminderEnabled}
                   onChange={handleReminderToggle}
+                  color="primary"
                 />
               }
               label="Enable reminder"
+              sx={{ mb: reminderEnabled ? 2 : 0 }}
             />
             
             {reminderEnabled && (
@@ -222,8 +223,8 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
                 value={reminderTime}
                 onChange={(e) => setReminderTime(e.target.value)}
                 fullWidth
-                sx={{ mt: 2 }}
                 InputLabelProps={{ shrink: true }}
+                sx={{ mt: 1 }}
               />
             )}
           </Box>
