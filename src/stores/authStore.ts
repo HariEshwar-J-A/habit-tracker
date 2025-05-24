@@ -178,11 +178,17 @@ export const useAuthStore = create<AuthState>()(
         try {
           const { data, error } = await supabase.auth.signInWithOAuth({
             provider,
+            options: {
+              redirectTo: `${window.location.origin}/auth`,
+              skipBrowserRedirect: false,
+            }
           });
 
           if (error) {
             throw error;
           }
+
+          return data;
         } catch (error) {
           console.error('OAuth login error:', error);
           throw error;
