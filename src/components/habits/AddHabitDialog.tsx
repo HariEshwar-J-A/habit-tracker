@@ -51,7 +51,7 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('daily');
   const [color, setColor] = useState('#1976d2');
   const [reminderEnabled, setReminderEnabled] = useState(false);
-  const [reminderTime, setReminderTime] = useState('');
+  const [reminderTime, setReminderTime] = useState('12:00');
   const [target, setTarget] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -73,14 +73,21 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
   };
   
   const handleSubmit = async () => {
+    setError('');
+    
     if (!name.trim()) {
       setError('Please enter a habit name');
       playError();
       return;
     }
+
+    if (reminderEnabled && !reminderTime) {
+      setError('Please set a reminder time');
+      playError();
+      return;
+    }
     
     setIsSubmitting(true);
-    setError('');
     
     try {
       await addHabit({
@@ -115,7 +122,7 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
     setFrequency('daily');
     setColor('#1976d2');
     setReminderEnabled(false);
-    setReminderTime('');
+    setReminderTime('12:00');
     setTarget(1);
     setError('');
   };
@@ -223,6 +230,9 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
                 value={reminderTime}
                 onChange={(e) => setReminderTime(e.target.value)}
                 fullWidth
+                required
+                error={!reminderTime}
+                helperText={!reminderTime ? 'Please set a reminder time' : ''}
                 InputLabelProps={{ shrink: true }}
                 sx={{ mt: 1 }}
               />
