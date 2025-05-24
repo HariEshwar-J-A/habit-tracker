@@ -212,7 +212,7 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
                   color="primary"
                 />
               }
-              labelPlacement="right"
+              labelPlacement="bottom"
               label="Enable reminder"
               sx={{ mb: reminderEnabled ? 2 : 0 }}
             />
