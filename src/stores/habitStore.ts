@@ -28,12 +28,16 @@ export const useHabitStore = create<HabitState>((set, get) => ({
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       set({ habits: habits || [], isLoading: false });
     } catch (error) {
       console.error('Failed to fetch habits:', error);
       set({ error: 'Failed to fetch habits', isLoading: false });
+      throw error;
     }
   },
 
