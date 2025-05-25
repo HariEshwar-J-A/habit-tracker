@@ -92,12 +92,14 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
       });
       setError('');
     }
-  }, [habit, open]);
+  }, [habit, open, setFormState, setError]);
 
   const handleInputChange = (field: keyof FormState) => (
     event: React.ChangeEvent<HTMLInputElement | { value: unknown }> | SelectChangeEvent
   ) => {
     const value = event.target.value;
+
+    console.log()
     
     setFormState(prev => ({
       ...prev,
