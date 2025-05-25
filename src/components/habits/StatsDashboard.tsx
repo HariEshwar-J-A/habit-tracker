@@ -10,18 +10,30 @@ interface StatsDashboardProps {
   allHabits?: boolean;
 }
 
+interface Stats {
+  currentStreak: number;
+  longestStreak: number;
+  totalCompletions: number;
+  completionRate: number;
+}
+
 const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
   const theme = useTheme();
   const { habits, getHabitCompletions } = useHabitStore();
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const calculateStats = async () => {
+      if (!mounted) return;
       setLoading(true);
+
       try {
+        let calculatedStats: Stats;
+
         if (allHabits) {
-          // Calculate aggregate stats for all habits
           let totalCompletions = 0;
           let bestStreak = 0;
           let totalCurrentStreak = 0;
@@ -30,25 +42,25 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
           const startDate = new Date();
           startDate.setFullYear(startDate.getFullYear() - 1);
           
-          for (const habit of habits) {
+          await Promise.all(habits.map(async (habit) => {
             const completions = await getHabitCompletions(habit.id, startDate, endDate);
-            totalCompletions += completions.length;
-            
-            if (habit.longest_streak > bestStreak) {
-              bestStreak = habit.longest_streak;
+            if (mounted) {
+              totalCompletions += completions.length;
+              bestStreak = Math.max(bestStreak, habit.longest_streak);
+              totalCurrentStreak += habit.current_streak;
             }
-            
-            totalCurrentStreak += habit.current_streak;
-          }
+          }));
+
+          if (!mounted) return;
           
-          setStats({
+          calculatedStats = {
             totalCompletions,
             currentStreak: Math.round(totalCurrentStreak / Math.max(1, habits.length)),
             longestStreak: bestStreak,
             completionRate: habits.length > 0 
               ? (totalCompletions / (365 * habits.length)) * 100 
               : 0,
-          });
+          };
         } else if (habit) {
           const endDate = new Date();
           const startDate = new Date();
@@ -56,27 +68,48 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
           
           const completions = await getHabitCompletions(habit.id, startDate, endDate);
           
-          setStats({
+          if (!mounted) return;
+
+          calculatedStats = {
             currentStreak: habit.current_streak,
             longestStreak: habit.longest_streak,
             totalCompletions: completions.length,
             completionRate: (completions.length / 365) * 100,
-          });
+          };
+        } else {
+          calculatedStats = {
+            currentStreak: 0,
+            longestStreak: 0,
+            totalCompletions: 0,
+            completionRate: 0,
+          };
+        }
+
+        if (mounted) {
+          setStats(calculatedStats);
         }
       } catch (error) {
         console.error('Failed to calculate stats:', error);
-        setStats({
-          currentStreak: 0,
-          longestStreak: 0,
-          totalCompletions: 0,
-          completionRate: 0,
-        });
+        if (mounted) {
+          setStats({
+            currentStreak: 0,
+            longestStreak: 0,
+            totalCompletions: 0,
+            completionRate: 0,
+          });
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
     
     calculateStats();
+
+    return () => {
+      mounted = false;
+    };
   }, [habit, allHabits, habits, getHabitCompletions]);
 
   if (loading) {
