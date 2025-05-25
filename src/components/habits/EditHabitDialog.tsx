@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Dialog, 
   DialogTitle, 
@@ -65,6 +65,7 @@ const initialFormState: FormState = {
 const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
   const theme = useTheme();
   const { updateHabit } = useHabitStore();
+  const previousHabitId = useRef<string | null>(null);
   
   const [playSuccess] = useSound('/sounds/success.mp3', { volume: 0.5 });
   const [playError] = useSound('/sounds/error.mp3', { volume: 0.5 });
@@ -75,12 +76,12 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
 
   useEffect(() => {
     if (!open) {
-      setFormState(initialFormState);
       setError('');
       return;
     }
 
-    if (habit) {
+    // Only update form state if we're opening the dialog with a different habit
+    if (habit && habit.id !== previousHabitId.current) {
       setFormState({
         name: habit.name,
         description: habit.description || '',
@@ -90,16 +91,15 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
         reminder_time: habit.reminder_time || '',
         target: habit.target
       });
+      previousHabitId.current = habit.id;
       setError('');
     }
-  }, [habit, open, setFormState, setError]);
+  }, [habit, open]);
 
   const handleInputChange = (field: keyof FormState) => (
     event: React.ChangeEvent<HTMLInputElement | { value: unknown }> | SelectChangeEvent
   ) => {
     const value = event.target.value;
-
-    console.log()
     
     setFormState(prev => ({
       ...prev,
@@ -159,7 +159,6 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
   };
 
   const handleClose = () => {
-    setFormState(initialFormState);
     setError('');
     onClose();
   };
