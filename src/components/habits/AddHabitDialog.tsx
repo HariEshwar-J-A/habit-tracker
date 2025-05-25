@@ -95,8 +95,8 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
         description,
         frequency,
         color,
-        reminderEnabled,
-        reminderTime: reminderEnabled ? reminderTime : undefined,
+        reminder_enabled: reminderEnabled,
+        reminder_time: reminderEnabled ? reminderTime : null,
         target
       });
       
