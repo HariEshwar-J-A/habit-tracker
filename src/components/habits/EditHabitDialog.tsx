@@ -21,6 +21,7 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import { useHabitStore } from '../../stores/habitStore';
 import { Habit } from '../../types';
 import { toast } from 'react-toastify';
+import useSound from 'use-sound';
 
 const colorOptions = [
   { name: 'Blue', value: '#1976d2' },
@@ -45,6 +46,10 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
   const theme = useTheme();
   const { updateHabit } = useHabitStore();
   
+  // Sound effects
+  const [playSuccess] = useSound('/sounds/success.mp3', { volume: 0.5 });
+  const [playError] = useSound('/sounds/error.mp3', { volume: 0.5 });
+  
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('daily');
@@ -61,7 +66,7 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
       setDescription(habit.description || '');
       setFrequency(habit.frequency);
       setColor(habit.color);
-      setReminderEnabled(habit.reminder_enabled);
+      setReminderEnabled(habit.reminder_enabled || false);
       setReminderTime(habit.reminder_time || '');
       setTarget(habit.target);
       setError('');
@@ -78,6 +83,9 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
   
   const handleReminderToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     setReminderEnabled(event.target.checked);
+    if (!event.target.checked) {
+      setReminderTime('');
+    }
   };
   
   const handleSubmit = async () => {
@@ -85,6 +93,13 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
     
     if (!name.trim()) {
       setError('Please enter a habit name');
+      playError();
+      return;
+    }
+
+    if (reminderEnabled && !reminderTime) {
+      setError('Please set a reminder time');
+      playError();
       return;
     }
     
@@ -102,11 +117,13 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
         target
       });
       
+      playSuccess();
       toast.success('Habit updated successfully');
       onClose();
     } catch (error) {
       console.error('Failed to update habit:', error);
       setError('Failed to update habit. Please try again.');
+      playError();
       toast.error('Failed to update habit');
     } finally {
       setIsSubmitting(false);
@@ -186,15 +203,22 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
             </Select>
           </FormControl>
           
-          <Box sx={{ mt: 1 }}>
+          <Box sx={{ 
+            p: 3, 
+            bgcolor: theme.palette.mode === 'light' ? 'grey.100' : 'grey.900',
+            borderRadius: 1,
+            border: `1px solid ${theme.palette.divider}`
+          }}>
             <FormControlLabel
               control={
                 <Switch
                   checked={reminderEnabled}
                   onChange={handleReminderToggle}
+                  color="primary"
                 />
               }
               label="Enable reminder"
+              sx={{ mb: reminderEnabled ? 2 : 0 }}
             />
             
             {reminderEnabled && (
@@ -204,8 +228,11 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
                 value={reminderTime}
                 onChange={(e) => setReminderTime(e.target.value)}
                 fullWidth
-                sx={{ mt: 1 }}
+                required
+                error={!reminderTime && reminderEnabled}
+                helperText={!reminderTime && reminderEnabled ? 'Please set a reminder time' : ''}
                 InputLabelProps={{ shrink: true }}
+                sx={{ mt: 1 }}
               />
             )}
           </Box>
