@@ -92,6 +92,8 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
       });
       setError('');
     }
+
+    console.log('Inside UseEffect')
   }, [habit, open]);
 
   const handleInputChange = (field: keyof FormState) => (
