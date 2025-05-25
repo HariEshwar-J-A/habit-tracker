@@ -92,20 +92,16 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
       });
       setError('');
     }
-
-    console.log('Inside UseEffect')
   }, [habit, open]);
 
   const handleInputChange = (field: keyof FormState) => (
     event: React.ChangeEvent<HTMLInputElement | { value: unknown }> | SelectChangeEvent
   ) => {
     const value = event.target.value;
-
-    console.log("Inside handle input change function", {[field]: field === 'target' ? Math.max(1, Number(value)) : value});
     
     setFormState(prev => ({
       ...prev,
-      field: field === 'target' ? Math.max(1, Number(value)) : value
+      [field]: field === 'target' ? Math.max(1, Number(value)) : value
     }));
   };
 
