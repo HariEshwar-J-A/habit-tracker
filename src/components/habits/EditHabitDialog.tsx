@@ -111,8 +111,8 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
     const checked = event.target.checked;
     setFormState(prev => ({
       ...prev,
-      reminder_enabled: checked,
-      reminder_time: checked ? prev.reminder_time || '12:00' : ''
+      "reminder_enabled": checked,
+      "reminder_time": checked ? prev.reminder_time || '12:00' : ''
     }));
   };
 
