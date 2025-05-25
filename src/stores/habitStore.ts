@@ -7,7 +7,7 @@ interface HabitState {
   isLoading: boolean;
   error: string | null;
   fetchHabits: () => Promise<void>;
-  addHabit: (habit: Omit<Habit, 'id' | 'createdAt' | 'updatedAt' | 'currentStreak' | 'longestStreak'>) => Promise<string>;
+  addHabit: (habit: Omit<Habit, 'id' | 'created_at' | 'updated_at' | 'current_streak' | 'longest_streak'>) => Promise<string>;
   updateHabit: (id: string, habitData: Partial<Habit>) => Promise<void>;
   deleteHabit: (id: string) => Promise<void>;
   toggleHabitCompletion: (habitId: string, date: string) => Promise<void>;
@@ -123,7 +123,6 @@ export const useHabitStore = create<HabitState>((set, get) => ({
 
   toggleHabitCompletion: async (habitId, date) => {
     try {
-      // Check if completion exists
       const { data: existing, error: checkError } = await supabase
         .from('habit_completions')
         .select('id')
@@ -134,7 +133,6 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       if (checkError) throw checkError;
 
       if (existing) {
-        // Delete existing completion
         const { error: deleteError } = await supabase
           .from('habit_completions')
           .delete()
@@ -142,7 +140,6 @@ export const useHabitStore = create<HabitState>((set, get) => ({
 
         if (deleteError) throw deleteError;
       } else {
-        // Add new completion
         const { error: insertError } = await supabase
           .from('habit_completions')
           .insert([{
@@ -179,7 +176,6 @@ export const useHabitStore = create<HabitState>((set, get) => ({
 
   getHabitCompletions: async (habitId, startDate, endDate) => {
     try {
-      // Format dates as YYYY-MM-DD strings for the query
       const formattedStartDate = startDate.toISOString().split('T')[0];
       const formattedEndDate = endDate.toISOString().split('T')[0];
 
