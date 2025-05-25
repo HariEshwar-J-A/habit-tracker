@@ -50,54 +50,60 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
   const [playSuccess] = useSound('/sounds/success.mp3', { volume: 0.5 });
   const [playError] = useSound('/sounds/error.mp3', { volume: 0.5 });
   
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('daily');
-  const [color, setColor] = useState('#1976d2');
-  const [reminderEnabled, setReminderEnabled] = useState(false);
-  const [reminderTime, setReminderTime] = useState('');
-  const [target, setTarget] = useState(1);
+  const [formState, setFormState] = useState({
+    name: '',
+    description: '',
+    frequency: 'daily' as 'daily' | 'weekly' | 'monthly' | 'custom',
+    color: '#1976d2',
+    reminderEnabled: false,
+    reminderTime: '',
+    target: 1
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
   useEffect(() => {
-    if (habit) {
-      setName(habit.name);
-      setDescription(habit.description || '');
-      setFrequency(habit.frequency);
-      setColor(habit.color);
-      setReminderEnabled(habit.reminder_enabled || false);
-      setReminderTime(habit.reminder_time || '');
-      setTarget(habit.target);
+    if (habit && open) {
+      setFormState({
+        name: habit.name,
+        description: habit.description || '',
+        frequency: habit.frequency,
+        color: habit.color,
+        reminderEnabled: habit.reminder_enabled,
+        reminderTime: habit.reminder_time || '',
+        target: habit.target
+      });
       setError('');
     }
-  }, [habit]);
+  }, [habit, open]);
   
-  const handleFrequencyChange = (event: SelectChangeEvent) => {
-    setFrequency(event.target.value as 'daily' | 'weekly' | 'monthly' | 'custom');
-  };
-  
-  const handleColorChange = (event: SelectChangeEvent) => {
-    setColor(event.target.value);
+  const handleChange = (field: string) => (
+    event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent
+  ) => {
+    setFormState(prev => ({
+      ...prev,
+      [field]: event.target.value
+    }));
   };
   
   const handleReminderToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setReminderEnabled(event.target.checked);
-    if (!event.target.checked) {
-      setReminderTime('');
-    }
+    setFormState(prev => ({
+      ...prev,
+      reminderEnabled: event.target.checked,
+      reminderTime: event.target.checked ? prev.reminderTime : ''
+    }));
   };
   
   const handleSubmit = async () => {
     if (!habit) return;
     
-    if (!name.trim()) {
+    if (!formState.name.trim()) {
       setError('Please enter a habit name');
       playError();
       return;
     }
 
-    if (reminderEnabled && !reminderTime) {
+    if (formState.reminderEnabled && !formState.reminderTime) {
       setError('Please set a reminder time');
       playError();
       return;
@@ -108,13 +114,13 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
     
     try {
       await updateHabit(habit.id, {
-        name,
-        description,
-        frequency,
-        color,
-        reminder_enabled: reminderEnabled,
-        reminder_time: reminderEnabled ? reminderTime : null,
-        target
+        name: formState.name,
+        description: formState.description,
+        frequency: formState.frequency,
+        color: formState.color,
+        reminder_enabled: formState.reminderEnabled,
+        reminder_time: formState.reminderEnabled ? formState.reminderTime : null,
+        target: formState.target
       });
       
       playSuccess();
@@ -138,8 +144,8 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
           <TextField
             autoFocus
             label="Habit Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={formState.name}
+            onChange={handleChange('name')}
             fullWidth
             required
             error={error.includes('name')}
@@ -147,8 +153,8 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
           
           <TextField
             label="Description (optional)"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={formState.description}
+            onChange={handleChange('description')}
             fullWidth
             multiline
             rows={2}
@@ -157,9 +163,9 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
           <FormControl fullWidth>
             <InputLabel>Frequency</InputLabel>
             <Select
-              value={frequency}
+              value={formState.frequency}
               label="Frequency"
-              onChange={handleFrequencyChange}
+              onChange={handleChange('frequency')}
             >
               <MenuItem value="daily">Daily</MenuItem>
               <MenuItem value="weekly">Weekly</MenuItem>
@@ -171,8 +177,8 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
           <TextField
             label="Target (times per period)"
             type="number"
-            value={target}
-            onChange={(e) => setTarget(Math.max(1, parseInt(e.target.value) || 1))}
+            value={formState.target}
+            onChange={handleChange('target')}
             fullWidth
             InputProps={{ inputProps: { min: 1 } }}
           />
@@ -180,9 +186,9 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
           <FormControl fullWidth>
             <InputLabel>Color</InputLabel>
             <Select
-              value={color}
+              value={formState.color}
               label="Color"
-              onChange={handleColorChange}
+              onChange={handleChange('color')}
               renderValue={(selected) => (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box sx={{ width: 20, height: 20, borderRadius: '50%', bgcolor: selected }} />
@@ -212,25 +218,25 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
             <FormControlLabel
               control={
                 <Switch
-                  checked={reminderEnabled}
+                  checked={formState.reminderEnabled}
                   onChange={handleReminderToggle}
                   color="primary"
                 />
               }
               label="Enable reminder"
-              sx={{ mb: reminderEnabled ? 2 : 0 }}
+              sx={{ mb: formState.reminderEnabled ? 2 : 0 }}
             />
             
-            {reminderEnabled && (
+            {formState.reminderEnabled && (
               <TextField
                 label="Reminder Time"
                 type="time"
-                value={reminderTime}
-                onChange={(e) => setReminderTime(e.target.value)}
+                value={formState.reminderTime}
+                onChange={handleChange('reminderTime')}
                 fullWidth
                 required
-                error={!reminderTime && reminderEnabled}
-                helperText={!reminderTime && reminderEnabled ? 'Please set a reminder time' : ''}
+                error={!formState.reminderTime}
+                helperText={!formState.reminderTime ? 'Please set a reminder time' : ''}
                 InputLabelProps={{ shrink: true }}
                 sx={{ mt: 1 }}
               />
