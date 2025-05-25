@@ -42,28 +42,46 @@ interface EditHabitDialogProps {
   onClose: () => void;
 }
 
+interface FormState {
+  name: string;
+  description: string;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'custom';
+  color: string;
+  reminderEnabled: boolean;
+  reminderTime: string;
+  target: number;
+}
+
+const initialFormState: FormState = {
+  name: '',
+  description: '',
+  frequency: 'daily',
+  color: '#1976d2',
+  reminderEnabled: false,
+  reminderTime: '',
+  target: 1
+};
+
 const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
   const theme = useTheme();
   const { updateHabit } = useHabitStore();
   
-  // Sound effects
   const [playSuccess] = useSound('/sounds/success.mp3', { volume: 0.5 });
   const [playError] = useSound('/sounds/error.mp3', { volume: 0.5 });
   
-  const [formState, setFormState] = useState({
-    name: '',
-    description: '',
-    frequency: 'daily' as 'daily' | 'weekly' | 'monthly' | 'custom',
-    color: '#1976d2',
-    reminderEnabled: false,
-    reminderTime: '',
-    target: 1
-  });
+  const [formState, setFormState] = useState<FormState>(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  
+
+  // Reset form when dialog opens/closes
   useEffect(() => {
-    if (habit && open) {
+    if (!open) {
+      setFormState(initialFormState);
+      setError('');
+      return;
+    }
+
+    if (habit) {
       setFormState({
         name: habit.name,
         description: habit.description || '',
@@ -76,8 +94,8 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
       setError('');
     }
   }, [habit, open]);
-  
-  const handleChange = (field: string) => (
+
+  const handleInputChange = (field: keyof FormState) => (
     event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent
   ) => {
     setFormState(prev => ({
@@ -85,15 +103,16 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
       [field]: event.target.value
     }));
   };
-  
+
   const handleReminderToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
     setFormState(prev => ({
       ...prev,
-      reminderEnabled: event.target.checked,
-      reminderTime: event.target.checked ? prev.reminderTime : ''
+      reminderEnabled: checked,
+      reminderTime: checked ? prev.reminderTime || '12:00' : ''
     }));
   };
-  
+
   const handleSubmit = async () => {
     if (!habit) return;
     
@@ -114,8 +133,8 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
     
     try {
       await updateHabit(habit.id, {
-        name: formState.name,
-        description: formState.description,
+        name: formState.name.trim(),
+        description: formState.description.trim(),
         frequency: formState.frequency,
         color: formState.color,
         reminder_enabled: formState.reminderEnabled,
@@ -135,9 +154,15 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
       setIsSubmitting(false);
     }
   };
+
+  const handleClose = () => {
+    setFormState(initialFormState);
+    setError('');
+    onClose();
+  };
   
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <DialogTitle>Edit Habit</DialogTitle>
       <DialogContent>
         <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -145,7 +170,7 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
             autoFocus
             label="Habit Name"
             value={formState.name}
-            onChange={handleChange('name')}
+            onChange={handleInputChange('name')}
             fullWidth
             required
             error={error.includes('name')}
@@ -154,7 +179,7 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
           <TextField
             label="Description (optional)"
             value={formState.description}
-            onChange={handleChange('description')}
+            onChange={handleInputChange('description')}
             fullWidth
             multiline
             rows={2}
@@ -165,7 +190,7 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
             <Select
               value={formState.frequency}
               label="Frequency"
-              onChange={handleChange('frequency')}
+              onChange={handleInputChange('frequency')}
             >
               <MenuItem value="daily">Daily</MenuItem>
               <MenuItem value="weekly">Weekly</MenuItem>
@@ -178,7 +203,7 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
             label="Target (times per period)"
             type="number"
             value={formState.target}
-            onChange={handleChange('target')}
+            onChange={handleInputChange('target')}
             fullWidth
             InputProps={{ inputProps: { min: 1 } }}
           />
@@ -188,7 +213,7 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
             <Select
               value={formState.color}
               label="Color"
-              onChange={handleChange('color')}
+              onChange={handleInputChange('color')}
               renderValue={(selected) => (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box sx={{ width: 20, height: 20, borderRadius: '50%', bgcolor: selected }} />
@@ -232,7 +257,7 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
                 label="Reminder Time"
                 type="time"
                 value={formState.reminderTime}
-                onChange={handleChange('reminderTime')}
+                onChange={handleInputChange('reminderTime')}
                 fullWidth
                 required
                 error={!formState.reminderTime}
@@ -251,7 +276,7 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={isSubmitting}>
+        <Button onClick={handleClose} disabled={isSubmitting}>
           Cancel
         </Button>
         <Button 
