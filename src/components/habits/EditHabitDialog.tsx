@@ -14,13 +14,14 @@ import {
   FormControlLabel, 
   Switch, 
   Typography,
-  useTheme
+  useTheme,
+  CircularProgress
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { useHabitStore } from '../../stores/habitStore';
 import { Habit } from '../../types';
+import { toast } from 'react-toastify';
 
-// Color options
 const colorOptions = [
   { name: 'Blue', value: '#1976d2' },
   { name: 'Purple', value: '#9c27b0' },
@@ -54,15 +55,14 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
-  // Load habit data when the dialog opens
   useEffect(() => {
     if (habit) {
       setName(habit.name);
       setDescription(habit.description || '');
       setFrequency(habit.frequency);
       setColor(habit.color);
-      setReminderEnabled(habit.reminderEnabled);
-      setReminderTime(habit.reminderTime || '');
+      setReminderEnabled(habit.reminder_enabled);
+      setReminderTime(habit.reminder_time || '');
       setTarget(habit.target);
       setError('');
     }
@@ -92,20 +92,22 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
     setError('');
     
     try {
-      await updateHabit(habit.id as number, {
+      await updateHabit(habit.id, {
         name,
         description,
         frequency,
         color,
-        reminderEnabled,
-        reminderTime: reminderEnabled ? reminderTime : undefined,
+        reminder_enabled: reminderEnabled,
+        reminder_time: reminderEnabled ? reminderTime : null,
         target
       });
       
+      toast.success('Habit updated successfully');
       onClose();
     } catch (error) {
       console.error('Failed to update habit:', error);
       setError('Failed to update habit. Please try again.');
+      toast.error('Failed to update habit');
     } finally {
       setIsSubmitting(false);
     }
@@ -223,6 +225,7 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
           onClick={handleSubmit} 
           variant="contained" 
           disabled={isSubmitting}
+          startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
         >
           {isSubmitting ? 'Saving...' : 'Save Changes'}
         </Button>
