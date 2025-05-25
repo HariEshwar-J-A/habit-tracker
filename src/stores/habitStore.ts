@@ -25,7 +25,21 @@ export const useHabitStore = create<HabitState>((set, get) => ({
     try {
       const { data: habits, error } = await supabase
         .from('habits')
-        .select('*, habit_completions(date)')
+        .select(`
+          id,
+          user_id,
+          name,
+          description,
+          frequency,
+          color,
+          reminder_enabled,
+          reminder_time,
+          target,
+          current_streak,
+          longest_streak,
+          created_at,
+          updated_at
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
