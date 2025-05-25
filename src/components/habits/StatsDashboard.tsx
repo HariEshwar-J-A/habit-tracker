@@ -20,9 +20,6 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
     let mounted = true;
 
     const calculateStats = async () => {
-      if (!mounted) return;
-      setLoading(true);
-
       try {
         let calculatedStats: HabitStats;
 
@@ -35,14 +32,13 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
           const startDate = new Date();
           startDate.setFullYear(startDate.getFullYear() - 1);
           
-          await Promise.all(habits.map(async (habit) => {
+          for (const habit of habits) {
+            if (!mounted) return;
             const completions = await getHabitCompletions(habit.id, startDate, endDate);
-            if (mounted) {
-              totalCompletions += completions.length;
-              bestStreak = Math.max(bestStreak, habit.longest_streak);
-              totalCurrentStreak += habit.current_streak;
-            }
-          }));
+            totalCompletions += completions.length;
+            bestStreak = Math.max(bestStreak, habit.longest_streak);
+            totalCurrentStreak += habit.current_streak;
+          }
 
           if (!mounted) return;
           
@@ -80,7 +76,6 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
 
         if (mounted) {
           setStats(calculatedStats);
-          setLoading(false);
         }
       } catch (error) {
         console.error('Failed to calculate stats:', error);
@@ -91,6 +86,9 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
             totalCompletions: 0,
             completionRate: 0,
           });
+        }
+      } finally {
+        if (mounted) {
           setLoading(false);
         }
       }
