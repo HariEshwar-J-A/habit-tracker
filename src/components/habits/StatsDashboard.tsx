@@ -47,9 +47,9 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
           if (!mounted) return;
           
           calculatedStats = {
-            totalCompletions,
             currentStreak: Math.round(totalCurrentStreak / Math.max(1, habits.length)),
             longestStreak: bestStreak,
+            totalCompletions,
             completionRate: habits.length > 0 
               ? (totalCompletions / (365 * habits.length)) * 100 
               : 0,
@@ -80,6 +80,7 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
 
         if (mounted) {
           setStats(calculatedStats);
+          setLoading(false);
         }
       } catch (error) {
         console.error('Failed to calculate stats:', error);
@@ -90,9 +91,6 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
             totalCompletions: 0,
             completionRate: 0,
           });
-        }
-      } finally {
-        if (mounted) {
           setLoading(false);
         }
       }
