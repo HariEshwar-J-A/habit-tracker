@@ -3,7 +3,7 @@ import { Box, Typography, Grid, Paper, CircularProgress, useTheme } from '@mui/m
 import { Award, Calendar, TrendingUp, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useHabitStore } from '../../stores/habitStore';
-import { Habit, HabitStats } from '../../types';
+import { Habit } from '../../types';
 
 interface StatsDashboardProps {
   habit?: Habit;
@@ -13,7 +13,7 @@ interface StatsDashboardProps {
 const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
   const theme = useTheme();
   const { habits, getHabitCompletions } = useHabitStore();
-  const [stats, setStats] = useState<HabitStats | null>(null);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,26 +26,22 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
           let bestStreak = 0;
           let totalCurrentStreak = 0;
           
-          // End date is today
           const endDate = new Date();
-          // Start date is 1 year ago
           const startDate = new Date();
           startDate.setFullYear(startDate.getFullYear() - 1);
           
           for (const habit of habits) {
-            const completions = await getHabitCompletions(habit.id as number, startDate, endDate);
+            const completions = await getHabitCompletions(habit.id, startDate, endDate);
             totalCompletions += completions.length;
             
-            if (habit.longestStreak > bestStreak) {
-              bestStreak = habit.longestStreak;
+            if (habit.longest_streak > bestStreak) {
+              bestStreak = habit.longest_streak;
             }
             
-            totalCurrentStreak += habit.currentStreak;
+            totalCurrentStreak += habit.current_streak;
           }
           
-          // Create aggregate stats
           setStats({
-            habitId: 0,
             totalCompletions,
             currentStreak: Math.round(totalCurrentStreak / Math.max(1, habits.length)),
             longestStreak: bestStreak,
@@ -54,48 +50,27 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
               : 0,
           });
         } else if (habit) {
-          // Calculate stats for a single habit
           const endDate = new Date();
           const startDate = new Date();
           startDate.setFullYear(startDate.getFullYear() - 1);
           
-          const completions = await getHabitCompletions(habit.id as number, startDate, endDate);
+          const completions = await getHabitCompletions(habit.id, startDate, endDate);
           
-          // Group by month
-          const monthCounts: Record<string, number> = {};
-          let bestMonth = { month: 0, year: 0, count: 0 };
-          
-          completions.forEach(completion => {
-            const date = new Date(completion.date);
-            const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-            
-            if (!monthCounts[monthKey]) {
-              monthCounts[monthKey] = 0;
-            }
-            
-            monthCounts[monthKey]++;
-            
-            if (monthCounts[monthKey] > bestMonth.count) {
-              bestMonth = {
-                month: date.getMonth(),
-                year: date.getFullYear(),
-                count: monthCounts[monthKey]
-              };
-            }
-          });
-          
-          // Create habit stats
           setStats({
-            habitId: habit.id as number,
-            currentStreak: habit.currentStreak,
-            longestStreak: habit.longestStreak,
+            currentStreak: habit.current_streak,
+            longestStreak: habit.longest_streak,
             totalCompletions: completions.length,
             completionRate: (completions.length / 365) * 100,
-            bestMonth: bestMonth.count > 0 ? bestMonth : undefined
           });
         }
       } catch (error) {
         console.error('Failed to calculate stats:', error);
+        setStats({
+          currentStreak: 0,
+          longestStreak: 0,
+          totalCompletions: 0,
+          completionRate: 0,
+        });
       } finally {
         setLoading(false);
       }
@@ -120,7 +95,6 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
     );
   }
 
-  // Animation variants
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -212,32 +186,6 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
           </motion.div>
         </Grid>
       </Grid>
-
-      {stats.bestMonth && (
-        <motion.div variants={item}>
-          <Box sx={{ mt: 2 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2,
-                borderRadius: 2,
-                bgcolor: theme.palette.background.paper,
-                border: `1px solid ${theme.palette.divider}`,
-              }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                Best Month
-              </Typography>
-              <Typography variant="h6">
-                {new Date(stats.bestMonth.year, stats.bestMonth.month).toLocaleString('default', { month: 'long' })} {stats.bestMonth.year} 
-                <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                  with {stats.bestMonth.count} completions
-                </Typography>
-              </Typography>
-            </Paper>
-          </Box>
-        </motion.div>
-      )}
     </motion.div>
   );
 };

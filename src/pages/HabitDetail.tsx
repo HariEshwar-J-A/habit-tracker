@@ -19,6 +19,7 @@ import { useHabitStore } from '../stores/habitStore';
 import StreakCalendarHeatmap from '../components/habits/StreakCalendarHeatmap';
 import StatsDashboard from '../components/habits/StatsDashboard';
 import EditHabitDialog from '../components/habits/EditHabitDialog';
+import { toast } from 'react-toastify';
 
 const HabitDetail = () => {
   const theme = useTheme();
@@ -34,22 +35,26 @@ const HabitDetail = () => {
   
   useEffect(() => {
     const loadHabit = async () => {
+      if (!id) {
+        navigate('/', { replace: true });
+        return;
+      }
+
       setLoading(true);
       try {
         await fetchHabits();
-        
-        // Find the habit with the matching ID
-        const habitId = parseInt(id || '0');
-        const foundHabit = habits.find(h => h.id === habitId);
+        const foundHabit = habits.find(h => h.id === id);
         
         if (foundHabit) {
           setHabit(foundHabit);
         } else {
-          // Habit not found, redirect to dashboard
           navigate('/', { replace: true });
+          toast.error('Habit not found');
         }
       } catch (error) {
         console.error('Failed to load habit:', error);
+        toast.error('Failed to load habit');
+        navigate('/', { replace: true });
       } finally {
         setLoading(false);
       }
@@ -80,9 +85,11 @@ const HabitDetail = () => {
     setDeleting(true);
     try {
       await deleteHabit(habit.id);
+      toast.success('Habit deleted successfully');
       navigate('/', { replace: true });
     } catch (error) {
       console.error('Failed to delete habit:', error);
+      toast.error('Failed to delete habit');
     } finally {
       setDeleting(false);
       setDeleteDialogOpen(false);

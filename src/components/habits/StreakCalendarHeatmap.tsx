@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useHabitStore } from '../../stores/habitStore';
 
 interface StreakCalendarHeatmapProps {
-  habitId: number;
+  habitId: string;
 }
 
 const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
@@ -13,12 +13,10 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
   const [completionMap, setCompletionMap] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  // Get current date info
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
 
-  // Generate months for the last year
   const months = [];
   for (let i = 0; i < 12; i++) {
     const monthIndex = (currentMonth - i + 12) % 12;
@@ -26,25 +24,19 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
     months.unshift({ monthIndex, year });
   }
 
-  // Month names
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-  // Days of the week
   const daysOfWeek = ['Mon', 'Wed', 'Fri'];
 
   useEffect(() => {
     const fetchCompletions = async () => {
       setIsLoading(true);
       try {
-        // Calculate start date (1 year ago from today)
         const endDate = new Date();
         const startDate = new Date();
         startDate.setFullYear(startDate.getFullYear() - 1);
 
-        // Get completions
         const completions = await getHabitCompletions(habitId, startDate, endDate);
 
-        // Convert to a map for easy lookup
         const map: Record<string, boolean> = {};
         completions.forEach(completion => {
           map[completion.date] = true;
@@ -63,36 +55,28 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
     }
   }, [habitId, getHabitCompletions]);
 
-  // Get intensity of color based on completion status
   const getCellColor = (date: string) => {
     if (!completionMap[date]) {
       return theme.palette.mode === 'light' ? '#ebedf0' : '#333';
     }
-    
-    const baseColor = theme.palette.primary.main;
-    return baseColor;
+    return theme.palette.primary.main;
   };
 
-  // Generate cells for each day in the calendar
   const generateCalendarCells = () => {
     const cells = [];
     
-    // For each month
     for (let m = 0; m < months.length; m++) {
       const { monthIndex, year } = months[m];
       const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
       
       const monthCells = [];
       
-      // For each day in the month
       for (let d = 1; d <= daysInMonth; d++) {
         const date = new Date(year, monthIndex, d);
-        const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+        const dayOfWeek = date.getDay();
         
-        // Format date as YYYY-MM-DD
         const dateStr = date.toISOString().split('T')[0];
         
-        // Add cell for this day
         monthCells.push(
           <motion.div
             key={dateStr}
@@ -107,7 +91,7 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
             <Box
               sx={{
                 width: '100%',
-                paddingBottom: '100%', // Square aspect ratio
+                paddingBottom: '100%',
                 backgroundColor: getCellColor(dateStr),
                 borderRadius: '2px',
                 cursor: 'pointer',
