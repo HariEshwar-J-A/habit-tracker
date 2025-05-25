@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { useHabitStore } from '../../stores/habitStore';
+import { useAuthStore } from '../../stores/authStore';
 import { toast } from 'react-toastify';
 import useSound from 'use-sound';
 
@@ -45,6 +46,7 @@ interface AddHabitDialogProps {
 const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
   const theme = useTheme();
   const { addHabit } = useHabitStore();
+  const { user } = useAuthStore();
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -86,11 +88,18 @@ const AddHabitDialog = ({ open, onClose }: AddHabitDialogProps) => {
       playError();
       return;
     }
+
+    if (!user) {
+      setError('You must be logged in to create a habit');
+      playError();
+      return;
+    }
     
     setIsSubmitting(true);
     
     try {
       await addHabit({
+        user_id: user.id,
         name,
         description,
         frequency,
