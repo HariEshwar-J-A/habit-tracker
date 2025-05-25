@@ -25,13 +25,10 @@ export const useHabitStore = create<HabitState>((set, get) => ({
     try {
       const { data: habits, error } = await supabase
         .from('habits')
-        .select('*')
+        .select('*, habit_completions(date)')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       set({ habits: habits || [], isLoading: false });
     } catch (error) {
@@ -115,12 +112,12 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       // Check if completion exists
       const { data: existing, error: checkError } = await supabase
         .from('habit_completions')
-        .select('*')
+        .select('habit_completions.id')
         .eq('habit_id', habitId)
         .eq('date', date)
         .maybeSingle();
 
-      if (checkError && checkError.code !== 'PGRST116') throw checkError;
+      if (checkError) throw checkError;
 
       if (existing) {
         // Delete existing completion
@@ -146,7 +143,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       // Calculate new streak values
       const { currentStreak, longestStreak } = await get().calculateStreak(habitId);
 
-      // Update the habit with new streak values using explicit table reference
+      // Update the habit with new streak values using explicit table references
       const { error: updateError } = await supabase
         .from('habits')
         .update({
@@ -170,7 +167,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('habit_completions')
-        .select('*')
+        .select('habit_completions.id, habit_completions.habit_id, habit_completions.date, habit_completions.created_at')
         .eq('habit_id', habitId)
         .gte('date', startDate.toISOString().split('T')[0])
         .lte('date', endDate.toISOString().split('T')[0])
@@ -189,7 +186,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
     try {
       const { data: completions, error } = await supabase
         .from('habit_completions')
-        .select('date')
+        .select('habit_completions.date')
         .eq('habit_id', habitId)
         .order('date', { ascending: false });
 
