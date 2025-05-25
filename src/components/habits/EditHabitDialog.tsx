@@ -103,7 +103,7 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
     
     setFormState(prev => ({
       ...prev,
-      [field]: field === 'target' ? Math.max(1, Number(value)) : value
+      field: field === 'target' ? Math.max(1, Number(value)) : value
     }));
   };
 
@@ -111,8 +111,8 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
     const checked = event.target.checked;
     setFormState(prev => ({
       ...prev,
-      "reminder_enabled": checked,
-      "reminder_time": checked ? prev.reminder_time || '12:00' : ''
+      reminder_enabled: checked,
+      reminder_time: checked ? prev.reminder_time || '12:00' : ''
     }));
   };
 
