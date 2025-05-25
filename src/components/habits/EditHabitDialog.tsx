@@ -47,8 +47,8 @@ interface FormState {
   description: string;
   frequency: 'daily' | 'weekly' | 'monthly' | 'custom';
   color: string;
-  reminderEnabled: boolean;
-  reminderTime: string;
+  reminder_enabled: boolean;
+  reminder_time: string;
   target: number;
 }
 
@@ -57,8 +57,8 @@ const initialFormState: FormState = {
   description: '',
   frequency: 'daily',
   color: '#1976d2',
-  reminderEnabled: false,
-  reminderTime: '',
+  reminder_enabled: false,
+  reminder_time: '',
   target: 1
 };
 
@@ -73,7 +73,6 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  // Reset form when dialog opens/closes
   useEffect(() => {
     if (!open) {
       setFormState(initialFormState);
@@ -87,8 +86,8 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
         description: habit.description || '',
         frequency: habit.frequency,
         color: habit.color,
-        reminderEnabled: habit.reminder_enabled,
-        reminderTime: habit.reminder_time || '',
+        reminder_enabled: habit.reminder_enabled,
+        reminder_time: habit.reminder_time || '',
         target: habit.target
       });
       setError('');
@@ -96,11 +95,13 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
   }, [habit, open]);
 
   const handleInputChange = (field: keyof FormState) => (
-    event: React.ChangeEvent<HTMLInputElement> | SelectChangeEvent
+    event: React.ChangeEvent<HTMLInputElement | { value: unknown }> | SelectChangeEvent
   ) => {
+    const value = event.target.value;
+    
     setFormState(prev => ({
       ...prev,
-      [field]: event.target.value
+      [field]: field === 'target' ? Math.max(1, Number(value)) : value
     }));
   };
 
@@ -108,8 +109,8 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
     const checked = event.target.checked;
     setFormState(prev => ({
       ...prev,
-      reminderEnabled: checked,
-      reminderTime: checked ? prev.reminderTime || '12:00' : ''
+      reminder_enabled: checked,
+      reminder_time: checked ? prev.reminder_time || '12:00' : ''
     }));
   };
 
@@ -122,7 +123,7 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
       return;
     }
 
-    if (formState.reminderEnabled && !formState.reminderTime) {
+    if (formState.reminder_enabled && !formState.reminder_time) {
       setError('Please set a reminder time');
       playError();
       return;
@@ -137,8 +138,8 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
         description: formState.description.trim(),
         frequency: formState.frequency,
         color: formState.color,
-        reminder_enabled: formState.reminderEnabled,
-        reminder_time: formState.reminderEnabled ? formState.reminderTime : null,
+        reminder_enabled: formState.reminder_enabled,
+        reminder_time: formState.reminder_enabled ? formState.reminder_time : null,
         target: formState.target
       });
       
@@ -243,25 +244,25 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
             <FormControlLabel
               control={
                 <Switch
-                  checked={formState.reminderEnabled}
+                  checked={formState.reminder_enabled}
                   onChange={handleReminderToggle}
                   color="primary"
                 />
               }
               label="Enable reminder"
-              sx={{ mb: formState.reminderEnabled ? 2 : 0 }}
+              sx={{ mb: formState.reminder_enabled ? 2 : 0 }}
             />
             
-            {formState.reminderEnabled && (
+            {formState.reminder_enabled && (
               <TextField
                 label="Reminder Time"
                 type="time"
-                value={formState.reminderTime}
-                onChange={handleInputChange('reminderTime')}
+                value={formState.reminder_time}
+                onChange={handleInputChange('reminder_time')}
                 fullWidth
                 required
-                error={!formState.reminderTime}
-                helperText={!formState.reminderTime ? 'Please set a reminder time' : ''}
+                error={!formState.reminder_time}
+                helperText={!formState.reminder_time ? 'Please set a reminder time' : ''}
                 InputLabelProps={{ shrink: true }}
                 sx={{ mt: 1 }}
               />
