@@ -13,8 +13,9 @@ interface HabitItemProps {
 
 const HabitItem = ({ habit, onClick }: HabitItemProps) => {
   const [checking, setChecking] = useState(false);
-  const { toggleHabitCompletion } = useHabitStore();
+  const { toggleHabitCompletion, getHabitCompletions } = useHabitStore();
   const controls = useAnimation();
+  const [isCompletedToday, setIsCompletedToday] = useState(false);
   
   // Sound effects
   const [playComplete] = useSound('/sounds/complete.mp3', { volume: 0.5 });
@@ -22,6 +23,22 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
   
   // Get today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split('T')[0];
+
+  // Check if habit is completed today
+  useEffect(() => {
+    const checkTodayCompletion = async () => {
+      try {
+        const endDate = new Date();
+        const startDate = new Date();
+        const completions = await getHabitCompletions(habit.id, startDate, endDate);
+        setIsCompletedToday(completions.some(completion => completion.date === today));
+      } catch (error) {
+        console.error('Failed to check today completion:', error);
+      }
+    };
+
+    checkTodayCompletion();
+  }, [habit.id, today, getHabitCompletions]);
 
   // Glowing animation when it's reminder time
   useEffect(() => {
@@ -62,7 +79,9 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
     setChecking(true);
     try {
       await toggleHabitCompletion(habit.id, today);
-      if (habit.current_streak > 0) {
+      setIsCompletedToday(!isCompletedToday);
+      
+      if (isCompletedToday) {
         playUndo();
       } else {
         playComplete();
@@ -111,7 +130,7 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
                 <Checkbox
                   icon={<Circle size={24} />}
                   checkedIcon={<CheckCircle size={24} />}
-                  checked={habit.current_streak > 0}
+                  checked={isCompletedToday}
                   onClick={handleCheckToggle}
                   color="primary"
                   sx={{ p: 0.5 }}
