@@ -3,24 +3,17 @@ import { Box, Typography, Grid, Paper, CircularProgress, useTheme } from '@mui/m
 import { Award, Calendar, TrendingUp, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useHabitStore } from '../../stores/habitStore';
-import { Habit } from '../../types';
+import { Habit, HabitStats } from '../../types';
 
 interface StatsDashboardProps {
   habit?: Habit;
   allHabits?: boolean;
 }
 
-interface Stats {
-  currentStreak: number;
-  longestStreak: number;
-  totalCompletions: number;
-  completionRate: number;
-}
-
 const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
   const theme = useTheme();
   const { habits, getHabitCompletions } = useHabitStore();
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<HabitStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,7 +24,7 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
       setLoading(true);
 
       try {
-        let calculatedStats: Stats;
+        let calculatedStats: HabitStats;
 
         if (allHabits) {
           let totalCompletions = 0;
