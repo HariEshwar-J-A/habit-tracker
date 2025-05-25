@@ -71,12 +71,16 @@ export const useHabitStore = create<HabitState>((set, get) => ({
     try {
       const { error } = await supabase
         .from('habits')
-        .update(habitData)
+        .update({
+          ...habitData,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', id);
 
       if (error) throw error;
 
       await get().fetchHabits();
+      set({ isLoading: false });
     } catch (error) {
       console.error('Failed to update habit:', error);
       set({ error: 'Failed to update habit', isLoading: false });
@@ -95,6 +99,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       if (error) throw error;
 
       await get().fetchHabits();
+      set({ isLoading: false });
     } catch (error) {
       console.error('Failed to delete habit:', error);
       set({ error: 'Failed to delete habit', isLoading: false });
@@ -110,7 +115,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
         .select('*')
         .eq('habit_id', habitId)
         .eq('date', date)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
 
       if (checkError && checkError.code !== 'PGRST116') throw checkError;
 
@@ -133,7 +138,21 @@ export const useHabitStore = create<HabitState>((set, get) => ({
 
       // Update streaks
       const { currentStreak, longestStreak } = await get().calculateStreak(habitId);
-      await get().updateHabit(habitId, { current_streak: currentStreak, longest_streak: longestStreak });
+      
+      // Update the habit with new streak values
+      const { error: updateError } = await supabase
+        .from('habits')
+        .update({
+          current_streak: currentStreak,
+          longest_streak: longestStreak,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', habitId);
+
+      if (updateError) throw updateError;
+
+      // Refresh habits list
+      await get().fetchHabits();
     } catch (error) {
       console.error('Failed to toggle habit completion:', error);
       set({ error: 'Failed to toggle habit completion' });
