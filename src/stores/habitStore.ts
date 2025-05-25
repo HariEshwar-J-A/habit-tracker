@@ -179,12 +179,16 @@ export const useHabitStore = create<HabitState>((set, get) => ({
 
   getHabitCompletions: async (habitId, startDate, endDate) => {
     try {
+      // Format dates as YYYY-MM-DD strings for the query
+      const formattedStartDate = startDate.toISOString().split('T')[0];
+      const formattedEndDate = endDate.toISOString().split('T')[0];
+
       const { data, error } = await supabase
         .from('habit_completions')
         .select('id, habit_id, date, created_at')
         .eq('habit_id', habitId)
-        .gte('date', startDate.toISOString().split('T')[0])
-        .lte('date', endDate.toISOString().split('T')[0])
+        .gte('date', formattedStartDate)
+        .lte('date', formattedEndDate)
         .order('date', { ascending: true });
 
       if (error) throw error;
