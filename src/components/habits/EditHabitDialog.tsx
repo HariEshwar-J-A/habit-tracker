@@ -99,7 +99,7 @@ const EditHabitDialog = ({ open, habit, onClose }: EditHabitDialogProps) => {
   ) => {
     const value = event.target.value;
 
-    console.log("Inside handle input change function", field, value):
+    console.log("Inside handle input change function", field, value);
     
     setFormState(prev => ({
       ...prev,
