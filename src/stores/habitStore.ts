@@ -112,7 +112,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       // Check if completion exists
       const { data: existing, error: checkError } = await supabase
         .from('habit_completions')
-        .select('habit_completions.id')
+        .select('id')
         .eq('habit_id', habitId)
         .eq('date', date)
         .maybeSingle();
@@ -143,7 +143,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       // Calculate new streak values
       const { currentStreak, longestStreak } = await get().calculateStreak(habitId);
 
-      // Update the habit with new streak values using explicit table references
+      // Update the habit with new streak values
       const { error: updateError } = await supabase
         .from('habits')
         .update({
@@ -167,7 +167,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('habit_completions')
-        .select('habit_completions.id, habit_completions.habit_id, habit_completions.date, habit_completions.created_at')
+        .select('id, habit_id, date, created_at')
         .eq('habit_id', habitId)
         .gte('date', startDate.toISOString().split('T')[0])
         .lte('date', endDate.toISOString().split('T')[0])
@@ -186,7 +186,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
     try {
       const { data: completions, error } = await supabase
         .from('habit_completions')
-        .select('habit_completions.date')
+        .select('date')
         .eq('habit_id', habitId)
         .order('date', { ascending: false });
 
