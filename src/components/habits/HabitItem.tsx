@@ -25,9 +25,9 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
 
   // Glowing animation when it's reminder time
   useEffect(() => {
-    if (habit.reminderEnabled && habit.reminderTime) {
+    if (habit.reminder_enabled && habit.reminder_time) {
       const now = new Date();
-      const [hours, minutes] = habit.reminderTime.split(':').map(Number);
+      const [hours, minutes] = habit.reminder_time.split(':').map(Number);
       const reminderTime = new Date();
       reminderTime.setHours(hours, minutes, 0, 0);
 
@@ -52,7 +52,7 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
         controls.stop();
       }
     }
-  }, [habit.reminderEnabled, habit.reminderTime, controls]);
+  }, [habit.reminder_enabled, habit.reminder_time, controls]);
   
   const handleCheckToggle = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
@@ -61,12 +61,14 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
     
     setChecking(true);
     try {
-      await toggleHabitCompletion(habit.id as number, today);
-      if (habit.currentStreak > 0) {
+      await toggleHabitCompletion(habit.id, today);
+      if (habit.current_streak > 0) {
         playUndo();
       } else {
         playComplete();
       }
+    } catch (error) {
+      console.error('Failed to toggle completion:', error);
     } finally {
       setChecking(false);
     }
@@ -109,7 +111,7 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
                 <Checkbox
                   icon={<Circle size={24} />}
                   checkedIcon={<CheckCircle size={24} />}
-                  checked={habit.currentStreak > 0}
+                  checked={habit.current_streak > 0}
                   onClick={handleCheckToggle}
                   color="primary"
                   sx={{ p: 0.5 }}
@@ -140,7 +142,7 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
                   Current streak
                 </Typography>
                 <Typography variant="body1" fontWeight="medium">
-                  {habit.currentStreak} {habit.currentStreak === 1 ? 'day' : 'days'}
+                  {habit.current_streak} {habit.current_streak === 1 ? 'day' : 'days'}
                 </Typography>
               </Box>
               
@@ -149,7 +151,7 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
                   Best streak
                 </Typography>
                 <Typography variant="body1" fontWeight="medium">
-                  {habit.longestStreak} {habit.longestStreak === 1 ? 'day' : 'days'}
+                  {habit.longest_streak} {habit.longest_streak === 1 ? 'day' : 'days'}
                 </Typography>
               </Box>
             </Box>

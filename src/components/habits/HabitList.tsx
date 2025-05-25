@@ -25,8 +25,8 @@ const HabitList = () => {
     setDialogOpen(false);
   };
 
-  const handleHabitClick = (id: number) => {
-    navigate(`/habit/${id}`);
+  const handleHabitClick = (habitId: string) => {
+    navigate(`/habit/${habitId}`);
   };
 
   // Animation variants for the list
@@ -107,7 +107,7 @@ const HabitList = () => {
                 <motion.div variants={item}>
                   <HabitItem 
                     habit={habit} 
-                    onClick={() => handleHabitClick(habit.id as number)} 
+                    onClick={() => handleHabitClick(habit.id)} 
                   />
                 </motion.div>
               </Grid>
