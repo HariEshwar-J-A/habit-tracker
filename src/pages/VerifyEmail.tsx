@@ -10,6 +10,7 @@ const VerifyEmail = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, resendVerificationEmail, logout } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -19,11 +20,22 @@ const VerifyEmail = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [countdown]);
+
   const handleResendEmail = async () => {
     setIsLoading(true);
     try {
       await resendVerificationEmail();
       toast.success('Verification email sent! Please check your inbox.');
+      setCountdown(60); // Start 60-second countdown
     } catch (error) {
       toast.error('Failed to send verification email. Please try again.');
     } finally {
@@ -85,9 +97,9 @@ const VerifyEmail = () => {
               variant="contained"
               startIcon={<RefreshCw size={18} />}
               onClick={handleResendEmail}
-              disabled={isLoading}
+              disabled={isLoading || countdown > 0}
             >
-              {isLoading ? 'Sending...' : 'Resend Email'}
+              {isLoading ? 'Sending...' : countdown > 0 ? `Resend in ${countdown}s` : 'Resend Email'}
             </Button>
           </Box>
         </Paper>
