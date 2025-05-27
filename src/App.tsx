@@ -10,9 +10,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import Layout from './components/layout/Layout';
 import { useThemeStore } from './stores/themeStore';
 import { useAuthStore } from './stores/authStore';
-import { supabase } from './lib/supabase';
+import { supabase, handleEmailVerification } from './lib/supabase';
 
-// Lazy load pages to improve initial load performance
+// Lazy load pages
 const Auth = lazy(() => import('./pages/Auth'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const HabitDetail = lazy(() => import('./pages/HabitDetail'));
@@ -22,19 +22,37 @@ const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 
 function App() {
   const { theme, initializeTheme } = useThemeStore();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, setUser } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Handle email verification callback
+  useEffect(() => {
+    if (location.pathname === '/auth/callback') {
+      const handleCallback = async () => {
+        try {
+          await handleEmailVerification();
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            setUser(user);
+            navigate('/', { replace: true });
+          }
+        } catch (error) {
+          console.error('Verification error:', error);
+          navigate('/auth', { replace: true });
+        }
+      };
+      handleCallback();
+    }
+  }, [location.pathname, navigate, setUser]);
 
   // Initialize theme and check auth state
   useEffect(() => {
     const initializeApp = async () => {
       try {
         await initializeTheme();
-        
-        // Check current auth session
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session && location.pathname !== '/auth') {
+        if (!session && !location.pathname.startsWith('/auth')) {
           navigate('/auth', { replace: true });
         }
       } catch (error) {
@@ -45,25 +63,20 @@ function App() {
     initializeApp();
   }, [initializeTheme, navigate, location.pathname]);
 
-  // Set up auth state listener
+  // Auth state listener
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
         navigate('/auth', { replace: true });
+      } else if (event === 'USER_UPDATED') {
+        setUser(session.user);
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
-
-  // Check if user needs to verify email
-  useEffect(() => {
-    if (isAuthenticated && user && !user.isEmailVerified && location.pathname !== '/verify-email') {
-      navigate('/verify-email', { replace: true });
-    }
-  }, [isAuthenticated, user, location.pathname, navigate]);
+  }, [navigate, setUser]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -76,7 +89,7 @@ function App() {
             </Box>
           }>
             <Routes>
-              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/*" element={<Auth />} />
               <Route path="*" element={<Auth />} />
             </Routes>
           </Suspense>

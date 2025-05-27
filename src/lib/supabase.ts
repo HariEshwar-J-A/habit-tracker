@@ -8,22 +8,35 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Get the base URL for redirects, handling WebContainer environment
 const getBaseUrl = () => {
-  // In WebContainer, window.location.origin might not be reliable
-  // Use the current URL path as fallback
   return window.location.origin || window.location.href.split('/auth')[0];
 };
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true,
     autoRefreshToken: true,
+    persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
     storage: window.localStorage,
     storageKey: 'supabase.auth.token',
-    // Use dynamic base URL for redirects
     redirectTo: `${getBaseUrl()}/auth/callback`,
   },
 });
+
+// Handle email verification callback
+export const handleEmailVerification = async () => {
+  const params = new URLSearchParams(window.location.hash.substring(1));
+  const token = params.get('confirmation_token');
+  
+  if (token) {
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: token,
+      type: 'email',
+    });
+    
+    if (error) {
+      throw error;
+    }
+  }
+};
