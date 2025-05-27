@@ -11,7 +11,8 @@ import {
   DialogContent, 
   DialogActions,
   CircularProgress,
-  useTheme
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { ArrowLeft, Edit2, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -23,6 +24,7 @@ import { toast } from 'react-toastify';
 
 const HabitDetail = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { habits, fetchHabits, deleteHabit } = useHabitStore();
@@ -127,14 +129,43 @@ const HabitDetail = () => {
       exit={{ opacity: 0 }}
     >
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <IconButton onClick={() => navigate('/')} sx={{ mr: 1 }}>
-            <ArrowLeft />
-          </IconButton>
-          <Typography variant="h5" component="h1">
-            {habit.name}
-          </Typography>
-          <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          mb: 2,
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? 2 : 0
+        }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            width: isMobile ? '100%' : 'auto'
+          }}>
+            <IconButton 
+              onClick={() => navigate('/')} 
+              sx={{ mr: 1 }}
+              edge={isMobile ? 'start' : false}
+            >
+              <ArrowLeft />
+            </IconButton>
+            <Typography 
+              variant={isMobile ? "h6" : "h5"} 
+              component="h1"
+              sx={{ 
+                flex: 1,
+                wordBreak: 'break-word'
+              }}
+            >
+              {habit.name}
+            </Typography>
+          </Box>
+          
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 1,
+            width: isMobile ? '100%' : 'auto',
+            justifyContent: isMobile ? 'flex-end' : 'flex-start'
+          }}>
             <IconButton onClick={handleEditClick} color="primary">
               <Edit2 size={20} />
             </IconButton>
@@ -145,7 +176,14 @@ const HabitDetail = () => {
         </Box>
         
         {habit.description && (
-          <Typography variant="body1" sx={{ mb: 3, color: theme.palette.text.secondary }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              mb: 3, 
+              color: theme.palette.text.secondary,
+              px: isMobile ? 1 : 0
+            }}
+          >
             {habit.description}
           </Typography>
         )}
@@ -158,7 +196,8 @@ const HabitDetail = () => {
             borderRadius: 1, 
             bgcolor: habit.color, 
             color: 'white',
-            mb: 3
+            mb: 3,
+            mx: isMobile ? 1 : 0
           }}
         >
           <Typography variant="body2">
@@ -168,18 +207,24 @@ const HabitDetail = () => {
         
         <Divider sx={{ my: 3 }} />
         
-        <Box sx={{ mb: 4 }}>
+        <Box sx={{ mb: 4, px: isMobile ? 1 : 0 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
             Stats
           </Typography>
           <StatsDashboard habit={habit} />
         </Box>
         
-        <Box sx={{ mb: 4 }}>
+        <Box sx={{ mb: 4, px: isMobile ? 1 : 0 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
             History
           </Typography>
-          <StreakCalendarHeatmap habitId={habit.id} />
+          <Box sx={{ 
+            overflowX: 'auto',
+            mx: isMobile ? -2 : 0,
+            px: isMobile ? 2 : 0
+          }}>
+            <StreakCalendarHeatmap habitId={habit.id} />
+          </Box>
         </Box>
       </Box>
       
@@ -191,7 +236,12 @@ const HabitDetail = () => {
       />
       
       {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={handleDeleteDialogClose}>
+      <Dialog 
+        open={deleteDialogOpen} 
+        onClose={handleDeleteDialogClose}
+        fullWidth
+        maxWidth="xs"
+      >
         <DialogTitle>Delete Habit</DialogTitle>
         <DialogContent>
           <Typography>
