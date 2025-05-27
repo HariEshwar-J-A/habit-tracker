@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Paper, Typography, Box, Button, CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
-import { Mail, RefreshCw } from 'lucide-react';
+import { Mail, RefreshCw, ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { toast } from 'react-toastify';
 
@@ -58,14 +58,22 @@ const VerifyEmail = () => {
             If you don't see the email, please check your spam folder.
           </Typography>
           
-          <Button
-            variant="outlined"
-            startIcon={<RefreshCw size={18} />}
-            onClick={handleResendEmail}
-            sx={{ mt: 2 }}
-          >
-            Resend Verification Email
-          </Button>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 3 }}>
+            <Button
+              variant="outlined"
+              startIcon={<ArrowLeft size={18} />}
+              onClick={() => navigate('/auth')}
+            >
+              Back to Login
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<RefreshCw size={18} />}
+              onClick={handleResendEmail}
+            >
+              Resend Email
+            </Button>
+          </Box>
         </Paper>
       </motion.div>
     </Container>
