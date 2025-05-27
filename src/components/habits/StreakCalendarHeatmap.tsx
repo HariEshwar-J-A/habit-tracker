@@ -18,8 +18,8 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
 
-  // For mobile, show only last 6 months instead of 12
-  const monthsToShow = isMobile ? 6 : 12;
+  // Show fewer months on mobile for better UX
+  const monthsToShow = isMobile ? 4 : 12;
 
   const months = [];
   for (let i = 0; i < monthsToShow; i++) {
@@ -40,7 +40,6 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
         startDate.setMonth(startDate.getMonth() - monthsToShow);
 
         const completions = await getHabitCompletions(habitId, startDate, endDate);
-
         const map: Record<string, boolean> = {};
         completions.forEach(completion => {
           map[completion.date] = true;
@@ -94,13 +93,14 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
           >
             <Box
               sx={{
-                width: isMobile ? '16px' : '20px',
-                height: isMobile ? '16px' : '20px',
+                width: isMobile ? '12px' : '16px',
+                height: isMobile ? '12px' : '16px',
                 backgroundColor: getCellColor(dateStr),
                 borderRadius: '2px',
                 cursor: 'pointer',
+                transition: 'opacity 0.2s ease',
                 '&:hover': {
-                  opacity: 0.8,
+                  opacity: 0.7,
                 },
               }}
               title={`${date.toLocaleDateString()}: ${completionMap[dateStr] ? 'Completed' : 'Not completed'}`}
@@ -110,15 +110,29 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
       }
       
       cells.push(
-        <Box key={`${year}-${monthIndex}`} sx={{ mb: 2, minWidth: isMobile ? '200px' : '250px' }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            {monthNames[monthIndex]}
+        <Box 
+          key={`${year}-${monthIndex}`} 
+          sx={{ 
+            mb: 2,
+            minWidth: isMobile ? '160px' : '200px',
+            scrollSnapAlign: 'start',
+          }}
+        >
+          <Typography 
+            variant="subtitle2" 
+            sx={{ 
+              mb: 1,
+              fontSize: isMobile ? '0.7rem' : '0.875rem',
+              fontWeight: 500,
+            }}
+          >
+            {monthNames[monthIndex]} {year}
           </Typography>
           <Box
             sx={{
               display: 'grid',
               gridTemplateColumns: 'repeat(7, 1fr)',
-              gap: isMobile ? '2px' : '3px',
+              gap: isMobile ? '1px' : '2px',
               gridAutoRows: 'auto',
             }}
           >
@@ -135,76 +149,87 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
     <Paper 
       elevation={0} 
       sx={{ 
-        p: isMobile ? 2 : 3,
+        p: isMobile ? 1.5 : 3,
         borderRadius: 2,
         bgcolor: theme.palette.background.paper,
         border: `1px solid ${theme.palette.divider}`,
       }}
     >
-      <Typography variant="h6" sx={{ mb: 3 }}>
+      <Typography variant="h6" sx={{ mb: 2, fontSize: isMobile ? '1rem' : '1.25rem' }}>
         Activity Heatmap
       </Typography>
       
       <Box sx={{ 
         display: 'flex', 
         mb: 1,
-        pl: isMobile ? 1 : 2
+        pl: isMobile ? 0.5 : 1,
       }}>
-        <Box sx={{ width: '20px' }}></Box>
+        <Box sx={{ width: isMobile ? '16px' : '20px' }}></Box>
         <Box sx={{ 
           display: 'flex', 
           flex: 1, 
           justifyContent: 'space-between',
-          fontSize: isMobile ? '0.75rem' : '0.875rem'
+          fontSize: isMobile ? '0.65rem' : '0.75rem',
+          color: theme.palette.text.secondary,
         }}>
-          <Typography variant="caption">Mon</Typography>
-          <Typography variant="caption">Wed</Typography>
-          <Typography variant="caption">Fri</Typography>
-          <Typography variant="caption">Sun</Typography>
+          <Typography variant="caption">M</Typography>
+          <Typography variant="caption">W</Typography>
+          <Typography variant="caption">F</Typography>
+          <Typography variant="caption">S</Typography>
         </Box>
       </Box>
       
       <Box sx={{ 
         display: 'flex',
         overflowX: 'auto',
+        overflowY: 'hidden',
         pb: 2,
-        scrollbarWidth: 'thin',
+        mx: isMobile ? -1 : 0,
+        px: isMobile ? 1 : 0,
+        scrollSnapType: 'x mandatory',
         '&::-webkit-scrollbar': {
-          height: '6px',
+          height: '4px',
         },
         '&::-webkit-scrollbar-track': {
           background: theme.palette.background.default,
+          borderRadius: '2px',
         },
         '&::-webkit-scrollbar-thumb': {
           background: theme.palette.divider,
-          borderRadius: '3px',
+          borderRadius: '2px',
+          '&:hover': {
+            background: theme.palette.action.hover,
+          },
         },
+        scrollbarWidth: 'thin',
+        scrollbarColor: `${theme.palette.divider} ${theme.palette.background.default}`,
       }}>
         <Box sx={{ 
           display: 'flex', 
           flexDirection: 'column', 
-          mr: 2,
-          pl: isMobile ? 1 : 2
+          mr: 1,
+          mt: 3,
         }}>
           {daysOfWeek.map(day => (
             <Typography 
               key={day} 
               variant="caption" 
               sx={{ 
-                height: '20px', 
-                my: isMobile ? 3 : 4,
-                fontSize: isMobile ? '0.75rem' : '0.875rem'
+                height: isMobile ? '12px' : '16px',
+                my: isMobile ? 2.2 : 2.8,
+                fontSize: isMobile ? '0.65rem' : '0.75rem',
+                color: theme.palette.text.secondary,
               }}
             >
-              {day}
+              {day.charAt(0)}
             </Typography>
           ))}
         </Box>
         
         <Box sx={{ 
           display: 'flex', 
-          gap: 3,
-          minWidth: 'min-content'
+          gap: 2,
+          minWidth: 'min-content',
         }}>
           {generateCalendarCells()}
         </Box>
@@ -215,16 +240,18 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
         justifyContent: 'center', 
         alignItems: 'center', 
         mt: 2,
+        gap: 1,
         flexWrap: 'wrap',
-        gap: 1
       }}>
-        <Typography variant="caption" sx={{ mr: 1 }}>Less</Typography>
+        <Typography variant="caption" sx={{ fontSize: isMobile ? '0.65rem' : '0.75rem' }}>
+          Less
+        </Typography>
         {[0, 1, 2, 3].map((level) => (
           <Box 
             key={level}
             sx={{
-              width: isMobile ? 12 : 15,
-              height: isMobile ? 12 : 15,
+              width: isMobile ? '10px' : '12px',
+              height: isMobile ? '10px' : '12px',
               backgroundColor: level === 0 
                 ? (theme.palette.mode === 'light' ? '#ebedf0' : '#333') 
                 : theme.palette.primary[level === 1 ? 'light' : level === 2 ? 'main' : 'dark'],
@@ -232,7 +259,9 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
             }}
           />
         ))}
-        <Typography variant="caption" sx={{ ml: 1 }}>More</Typography>
+        <Typography variant="caption" sx={{ fontSize: isMobile ? '0.65rem' : '0.75rem' }}>
+          More
+        </Typography>
       </Box>
     </Paper>
   );
