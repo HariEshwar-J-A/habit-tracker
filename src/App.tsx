@@ -77,7 +77,7 @@ function App() {
           }>
             <Routes>
               <Route path="/auth" element={<Auth />} />
-              <Route path="*" element={<Navigate to="/auth" replace />} />
+              <Route path="*" element={<Navigate to="/auth\" replace />} />
             </Routes>
           </Suspense>
         ) : (
@@ -94,7 +94,7 @@ function App() {
                     <Route path="/habit/:id" element={<HabitDetail />} />
                     <Route path="/statistics" element={<Statistics />} />
                     <Route path="/settings" element={<Settings />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                    <Route path="*" element={<Navigate to="/\" replace />} />
                   </Routes>
                 </Suspense>
               </Layout>
@@ -106,7 +106,7 @@ function App() {
               }>
                 <Routes>
                   <Route path="/verify-email" element={<VerifyEmail />} />
-                  <Route path="*" element={<Navigate to="/verify-email" replace />} />
+                  <Route path="*" element={<Navigate to="/verify-email\" replace />} />
                 </Routes>
               </Suspense>
             )}
