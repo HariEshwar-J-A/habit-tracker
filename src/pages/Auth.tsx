@@ -17,13 +17,13 @@ import {
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
-  Github,
   Mail,
   Lock,
   Calendar,
   Shield,
   Database,
   Users,
+  Github,
 } from 'lucide-react';
 import GoogleIcon from '@mui/icons-material/Google';
 import { useAuthStore } from '../stores/authStore';
@@ -95,7 +95,6 @@ const Auth = () => {
     }
   };
 
-  // Demo theme switching
   const themes = ['blue', 'purple', 'teal', 'amber', 'pink'];
   const [currentThemeIndex, setCurrentThemeIndex] = useState(0);
 
@@ -109,7 +108,6 @@ const Auth = () => {
     <Container maxWidth="lg">
       <Box sx={{ py: 8 }}>
         <Grid container spacing={4}>
-          {/* Left side - Features */}
           <Grid item xs={12} md={7}>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -170,7 +168,6 @@ const Auth = () => {
             </motion.div>
           </Grid>
 
-          {/* Right side - Auth form */}
           <Grid item xs={12} md={5}>
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -217,7 +214,7 @@ const Auth = () => {
                   />
 
                   {error && (
-                    <Alert severity="error\" sx={{ mt: 2 }}>
+                    <Alert severity="error" sx={{ mt: 2 }}>
                       {error}
                     </Alert>
                   )}
