@@ -55,9 +55,7 @@ export const useAuthStore = create<AuthState>()(
             password,
           });
 
-          if (error) {
-            throw error;
-          }
+          if (error) throw error;
 
           if (data.user) {
             set({
@@ -90,9 +88,7 @@ export const useAuthStore = create<AuthState>()(
             password,
           });
 
-          if (error) {
-            throw error;
-          }
+          if (error) throw error;
 
           if (data.user) {
             set({
@@ -114,9 +110,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const { error } = await supabase.auth.signOut();
           
-          if (error) {
-            throw error;
-          }
+          if (error) throw error;
 
           set({
             isAuthenticated: false,
@@ -135,9 +129,7 @@ export const useAuthStore = create<AuthState>()(
             type: 'email',
           });
 
-          if (error) {
-            throw error;
-          }
+          if (error) throw error;
 
           if (data.user) {
             set((state) => ({
@@ -159,13 +151,8 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-            redirectTo: `${window.location.origin}/reset-password`,
-          });
-
-          if (error) {
-            throw error;
-          }
+          const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+          if (error) throw error;
         } catch (error) {
           console.error('Password reset error:', error);
           throw error;
@@ -184,9 +171,7 @@ export const useAuthStore = create<AuthState>()(
             email: currentUser.email,
           });
 
-          if (error) {
-            throw error;
-          }
+          if (error) throw error;
         } catch (error) {
           console.error('Failed to resend verification email:', error);
           throw error;
@@ -203,9 +188,7 @@ export const useAuthStore = create<AuthState>()(
             }
           });
 
-          if (error) {
-            throw error;
-          }
+          if (error) throw error;
 
           return data;
         } catch (error) {

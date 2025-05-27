@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Paper, Typography, Box, Button, CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
@@ -8,22 +8,37 @@ import { toast } from 'react-toastify';
 
 const VerifyEmail = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, resendVerificationEmail } = useAuthStore();
+  const { user, isAuthenticated, resendVerificationEmail, logout } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/auth');
+      navigate('/auth', { replace: true });
     } else if (user?.isEmailVerified) {
-      navigate('/');
+      navigate('/', { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
 
   const handleResendEmail = async () => {
+    setIsLoading(true);
     try {
       await resendVerificationEmail();
       toast.success('Verification email sent! Please check your inbox.');
     } catch (error) {
       toast.error('Failed to send verification email. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBackToLogin = async () => {
+    try {
+      await logout();
+      navigate('/auth', { replace: true });
+    } catch (error) {
+      console.error('Failed to logout:', error);
+      // Force navigation to auth page even if logout fails
+      navigate('/auth', { replace: true });
     }
   };
 
@@ -62,7 +77,7 @@ const VerifyEmail = () => {
             <Button
               variant="outlined"
               startIcon={<ArrowLeft size={18} />}
-              onClick={() => navigate('/auth')}
+              onClick={handleBackToLogin}
             >
               Back to Login
             </Button>
@@ -70,8 +85,9 @@ const VerifyEmail = () => {
               variant="contained"
               startIcon={<RefreshCw size={18} />}
               onClick={handleResendEmail}
+              disabled={isLoading}
             >
-              Resend Email
+              {isLoading ? 'Sending...' : 'Resend Email'}
             </Button>
           </Box>
         </Paper>
