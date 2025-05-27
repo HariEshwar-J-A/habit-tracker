@@ -12,7 +12,8 @@ import {
   DialogActions,
   CircularProgress,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Paper
 } from '@mui/material';
 import { ArrowLeft, Edit2, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -128,114 +129,125 @@ const HabitDetail = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          mb: 2,
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: isMobile ? 2 : 0
-        }}>
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center',
-            width: isMobile ? '100%' : 'auto'
-          }}>
-            <IconButton 
-              onClick={() => navigate('/')} 
-              sx={{ mr: 1 }}
-              edge={isMobile ? 'start' : false}
-            >
-              <ArrowLeft />
-            </IconButton>
-            <Typography 
-              variant={isMobile ? "h6" : "h5"} 
-              component="h1"
-              sx={{ 
-                flex: 1,
-                wordBreak: 'break-word'
-              }}
-            >
-              {habit.name}
-            </Typography>
-          </Box>
-          
-          <Box sx={{ 
-            display: 'flex', 
-            gap: 1,
-            width: isMobile ? '100%' : 'auto',
-            justifyContent: isMobile ? 'flex-end' : 'flex-start'
-          }}>
-            <IconButton onClick={handleEditClick} color="primary">
-              <Edit2 size={20} />
-            </IconButton>
-            <IconButton onClick={handleDeleteClick} color="error">
-              <Trash2 size={20} />
-            </IconButton>
-          </Box>
-        </Box>
-        
-        {habit.description && (
-          <Typography 
-            variant="body1" 
-            sx={{ 
-              mb: 3, 
-              color: theme.palette.text.secondary,
-              px: isMobile ? 1 : 0
-            }}
-          >
-            {habit.description}
-          </Typography>
-        )}
-        
-        <Box 
+      <Box sx={{ 
+        mb: 4,
+        mx: isMobile ? -2 : 0
+      }}>
+        <Paper 
+          elevation={0}
           sx={{ 
-            display: 'inline-block', 
-            px: 2, 
-            py: 1, 
-            borderRadius: 1, 
-            bgcolor: habit.color, 
-            color: 'white',
-            mb: 3,
-            mx: isMobile ? 1 : 0
+            p: isMobile ? 2 : 3,
+            bgcolor: theme.palette.background.paper,
+            borderRadius: isMobile ? 0 : 2
           }}
         >
-          <Typography variant="body2">
-            {habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)} habit
-          </Typography>
-        </Box>
-        
-        <Divider sx={{ my: 3 }} />
-        
-        <Box sx={{ mb: 4, px: isMobile ? 1 : 0 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Stats
-          </Typography>
-          <StatsDashboard habit={habit} />
-        </Box>
-        
-        <Box sx={{ mb: 4, px: isMobile ? 1 : 0 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            History
-          </Typography>
           <Box sx={{ 
-            overflowX: 'auto',
-            mx: isMobile ? -2 : 0,
-            px: isMobile ? 2 : 0
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: isMobile ? 'flex-start' : 'center',
+            gap: 2,
+            mb: 3
           }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              width: '100%'
+            }}>
+              <IconButton 
+                onClick={() => navigate('/')} 
+                sx={{ mr: 1 }}
+                edge="start"
+              >
+                <ArrowLeft />
+              </IconButton>
+              <Typography 
+                variant={isMobile ? 'h6' : 'h5'} 
+                component="h1"
+                sx={{ 
+                  flex: 1,
+                  wordBreak: 'break-word'
+                }}
+              >
+                {habit.name}
+              </Typography>
+            </Box>
+            
+            <Box sx={{ 
+              display: 'flex',
+              gap: 1,
+              width: isMobile ? '100%' : 'auto',
+              justifyContent: 'flex-end'
+            }}>
+              <Button
+                startIcon={<Edit2 size={18} />}
+                onClick={handleEditClick}
+                variant="outlined"
+                size={isMobile ? 'small' : 'medium'}
+              >
+                Edit
+              </Button>
+              <Button
+                startIcon={<Trash2 size={18} />}
+                onClick={handleDeleteClick}
+                variant="outlined"
+                color="error"
+                size={isMobile ? 'small' : 'medium'}
+              >
+                Delete
+              </Button>
+            </Box>
+          </Box>
+
+          {habit.description && (
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                mb: 3,
+                color: theme.palette.text.secondary
+              }}
+            >
+              {habit.description}
+            </Typography>
+          )}
+
+          <Box 
+            sx={{ 
+              display: 'inline-block',
+              px: 2,
+              py: 1,
+              borderRadius: 1,
+              bgcolor: habit.color,
+              color: 'white',
+              mb: 3
+            }}
+          >
+            <Typography variant="body2">
+              {habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)} habit
+            </Typography>
+          </Box>
+
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Stats
+            </Typography>
+            <StatsDashboard habit={habit} />
+          </Box>
+
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              History
+            </Typography>
             <StreakCalendarHeatmap habitId={habit.id} />
           </Box>
-        </Box>
+        </Paper>
       </Box>
       
-      {/* Edit Dialog */}
       <EditHabitDialog
         open={editDialogOpen}
         habit={habit}
         onClose={handleEditDialogClose}
       />
       
-      {/* Delete Confirmation Dialog */}
       <Dialog 
         open={deleteDialogOpen} 
         onClose={handleDeleteDialogClose}
