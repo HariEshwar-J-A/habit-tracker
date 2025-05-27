@@ -24,6 +24,6 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     storage: window.localStorage,
     storageKey: 'supabase.auth.token',
     // Use dynamic base URL for redirects
-    redirectTo: `${getBaseUrl()}/auth`,
+    redirectTo: `${getBaseUrl()}/auth/callback`,
   },
 });

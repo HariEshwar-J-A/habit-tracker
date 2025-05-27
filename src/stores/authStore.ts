@@ -22,7 +22,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       isAuthenticated: false,
       user: null,
 
@@ -176,10 +176,15 @@ export const useAuthStore = create<AuthState>()(
       },
 
       resendVerificationEmail: async () => {
+        const currentUser = get().user;
+        if (!currentUser?.email) {
+          throw new Error('No user email found');
+        }
+
         try {
           const { error } = await supabase.auth.resend({
             type: 'signup',
-            email: useAuthStore.getState().user?.email,
+            email: currentUser.email,
           });
 
           if (error) {
@@ -196,7 +201,7 @@ export const useAuthStore = create<AuthState>()(
           const { data, error } = await supabase.auth.signInWithOAuth({
             provider,
             options: {
-              redirectTo: `${window.location.origin}/auth`,
+              redirectTo: `${window.location.origin}/auth/callback`,
               skipBrowserRedirect: false,
             }
           });
