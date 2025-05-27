@@ -100,7 +100,7 @@ export const useAuthStore = create<AuthState>()(
               user: {
                 id: data.user.id,
                 email: data.user.email!,
-                isEmailVerified: data.user.email_confirmed_at !== null,
+                isEmailVerified: false,
               },
             });
           }

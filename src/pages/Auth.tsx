@@ -81,6 +81,7 @@ const Auth = () => {
         navigate('/');
       } else {
         await signup(email, password);
+        toast.info('Please check your email to verify your account');
         navigate('/verify-email');
       }
     } catch (err: any) {
@@ -216,7 +217,7 @@ const Auth = () => {
                   />
 
                   {error && (
-                    <Alert severity="error\" sx={{ mt: 2 }}>
+                    <Alert severity="error" sx={{ mt: 2 }}>
                       {error}
                     </Alert>
                   )}
