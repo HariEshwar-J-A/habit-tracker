@@ -28,6 +28,7 @@ import {
 import GoogleIcon from '@mui/icons-material/Google';
 import { useAuthStore } from '../stores/authStore';
 import { useThemeStore } from '../stores/themeStore';
+import { toast } from 'react-toastify';
 
 const features = [
   {
@@ -75,8 +76,13 @@ const Auth = () => {
         await signup(email, password);
         navigate('/verify-email');
       }
-    } catch (err) {
-      setError('Authentication failed. Please try again.');
+    } catch (err: any) {
+      if (err.message === 'Please verify your email before logging in') {
+        navigate('/verify-email');
+        toast.error('Please verify your email before logging in');
+      } else {
+        setError(err.message || 'Authentication failed. Please try again.');
+      }
     }
   };
 
@@ -211,7 +217,7 @@ const Auth = () => {
                   />
 
                   {error && (
-                    <Alert severity="error\" sx={{ mt: 2 }}>
+                    <Alert severity="error" sx={{ mt: 2 }}>
                       {error}
                     </Alert>
                   )}

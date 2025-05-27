@@ -56,10 +56,11 @@ export const useAuthStore = create<AuthState>()(
           });
 
           if (error) {
-            if (error.message === 'Invalid login credentials') {
-              throw new Error('Invalid email or password. Please try again.');
-            }
             throw error;
+          }
+
+          if (!data.user?.email_confirmed_at) {
+            throw new Error('Please verify your email before logging in');
           }
 
           if (data.user) {
