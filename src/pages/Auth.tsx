@@ -71,18 +71,20 @@ const Auth = () => {
     try {
       if (isLogin) {
         await login(email, password);
+        const user = useAuthStore.getState().user;
+        
+        if (!user?.isEmailVerified) {
+          navigate('/verify-email');
+          return;
+        }
+        
         navigate('/');
       } else {
         await signup(email, password);
         navigate('/verify-email');
       }
     } catch (err: any) {
-      if (err.message === 'Please verify your email before logging in') {
-        navigate('/verify-email');
-        toast.error('Please verify your email before logging in');
-      } else {
-        setError(err.message || 'Authentication failed. Please try again.');
-      }
+      setError(err.message || 'Authentication failed. Please try again.');
     }
   };
 
@@ -214,7 +216,7 @@ const Auth = () => {
                   />
 
                   {error && (
-                    <Alert severity="error\" sx={{ mt: 2 }}>
+                    <Alert severity="error" sx={{ mt: 2 }}>
                       {error}
                     </Alert>
                   )}

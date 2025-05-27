@@ -59,10 +59,6 @@ export const useAuthStore = create<AuthState>()(
             throw error;
           }
 
-          if (!data.user?.email_confirmed_at) {
-            throw new Error('Please verify your email before logging in');
-          }
-
           if (data.user) {
             set({
               isAuthenticated: true,
