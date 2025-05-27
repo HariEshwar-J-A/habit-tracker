@@ -17,6 +17,7 @@ interface AuthState {
   loginWithProvider: (provider: 'google' | 'github') => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   setUser: (user: User | null) => void;
+  resendVerificationEmail: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -170,6 +171,22 @@ export const useAuthStore = create<AuthState>()(
           }
         } catch (error) {
           console.error('Password reset error:', error);
+          throw error;
+        }
+      },
+
+      resendVerificationEmail: async () => {
+        try {
+          const { error } = await supabase.auth.resend({
+            type: 'signup',
+            email: useAuthStore.getState().user?.email,
+          });
+
+          if (error) {
+            throw error;
+          }
+        } catch (error) {
+          console.error('Failed to resend verification email:', error);
           throw error;
         }
       },

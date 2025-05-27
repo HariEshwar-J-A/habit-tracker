@@ -18,6 +18,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const HabitDetail = lazy(() => import('./pages/HabitDetail'));
 const Statistics = lazy(() => import('./pages/Statistics'));
 const Settings = lazy(() => import('./pages/Settings'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 
 function App() {
   const { theme, initializeTheme } = useThemeStore();
@@ -57,6 +58,13 @@ function App() {
     };
   }, [navigate]);
 
+  // Check if user needs to verify email
+  useEffect(() => {
+    if (isAuthenticated && user && !user.isEmailVerified && location.pathname !== '/verify-email') {
+      navigate('/verify-email');
+    }
+  }, [isAuthenticated, user, location.pathname, navigate]);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -73,21 +81,36 @@ function App() {
             </Routes>
           </Suspense>
         ) : (
-          <Layout>
-            <Suspense fallback={
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <CircularProgress />
-              </Box>
-            }>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/habit/:id" element={<HabitDetail />} />
-                <Route path="/statistics" element={<Statistics />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Suspense>
-          </Layout>
+          <>
+            {user?.isEmailVerified ? (
+              <Layout>
+                <Suspense fallback={
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                    <CircularProgress />
+                  </Box>
+                }>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/habit/:id" element={<HabitDetail />} />
+                    <Route path="/statistics" element={<Statistics />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </Suspense>
+              </Layout>
+            ) : (
+              <Suspense fallback={
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                  <CircularProgress />
+                </Box>
+              }>
+                <Routes>
+                  <Route path="/verify-email" element={<VerifyEmail />} />
+                  <Route path="*" element={<Navigate to="/verify-email" replace />} />
+                </Routes>
+              </Suspense>
+            )}
+          </>
         )}
       </AnimatePresence>
       <ToastContainer

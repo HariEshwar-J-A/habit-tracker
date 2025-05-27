@@ -14,14 +14,12 @@ import {
   Grid,
   Card,
   CardContent,
-  Snackbar
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
   Github,
   Mail,
   Lock,
-  ChevronRight,
   Calendar,
   Shield,
   Database,
@@ -64,7 +62,6 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [showVerificationAlert, setShowVerificationAlert] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +73,7 @@ const Auth = () => {
         navigate('/');
       } else {
         await signup(email, password);
-        setShowVerificationAlert(true);
+        navigate('/verify-email');
       }
     } catch (err) {
       setError('Authentication failed. Please try again.');
@@ -160,7 +157,6 @@ const Auth = () => {
                 <Button
                   variant="outlined"
                   onClick={switchTheme}
-                  startIcon={<ChevronRight />}
                 >
                   Switch Theme
                 </Button>
@@ -267,13 +263,6 @@ const Auth = () => {
           </Grid>
         </Grid>
       </Box>
-
-      <Snackbar
-        open={showVerificationAlert}
-        autoHideDuration={6000}
-        onClose={() => setShowVerificationAlert(false)}
-        message="Please check your email for verification link"
-      />
     </Container>
   );
 };
