@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect } from 'react';
-import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { CircularProgress, Box } from '@mui/material';
@@ -35,7 +35,7 @@ function App() {
         // Check current auth session
         const { data: { session } } = await supabase.auth.getSession();
         if (!session && location.pathname !== '/auth') {
-          navigate('/auth');
+          navigate('/auth', { replace: true });
         }
       } catch (error) {
         console.error('Failed to initialize app:', error);
@@ -49,7 +49,7 @@ function App() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
-        navigate('/auth');
+        navigate('/auth', { replace: true });
       }
     });
 
@@ -61,7 +61,7 @@ function App() {
   // Check if user needs to verify email
   useEffect(() => {
     if (isAuthenticated && user && !user.isEmailVerified && location.pathname !== '/verify-email') {
-      navigate('/verify-email');
+      navigate('/verify-email', { replace: true });
     }
   }, [isAuthenticated, user, location.pathname, navigate]);
 
@@ -77,7 +77,7 @@ function App() {
           }>
             <Routes>
               <Route path="/auth" element={<Auth />} />
-              <Route path="*" element={<Navigate to="/auth\" replace />} />
+              <Route path="*" element={<Auth />} />
             </Routes>
           </Suspense>
         ) : (
@@ -94,7 +94,7 @@ function App() {
                     <Route path="/habit/:id" element={<HabitDetail />} />
                     <Route path="/statistics" element={<Statistics />} />
                     <Route path="/settings" element={<Settings />} />
-                    <Route path="*" element={<Navigate to="/\" replace />} />
+                    <Route path="*" element={<Dashboard />} />
                   </Routes>
                 </Suspense>
               </Layout>
@@ -106,7 +106,7 @@ function App() {
               }>
                 <Routes>
                   <Route path="/verify-email" element={<VerifyEmail />} />
-                  <Route path="*" element={<Navigate to="/verify-email\" replace />} />
+                  <Route path="*" element={<VerifyEmail />} />
                 </Routes>
               </Suspense>
             )}

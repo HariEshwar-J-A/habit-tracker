@@ -8,12 +8,22 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
+// Get the base URL for redirects, handling WebContainer environment
+const getBaseUrl = () => {
+  // In WebContainer, window.location.origin might not be reliable
+  // Use the current URL path as fallback
+  return window.location.origin || window.location.href.split('/auth')[0];
+};
+
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    flowType: 'implicit',
     detectSessionInUrl: true,
-    redirectTo: `${window.location.origin}/auth`,
+    flowType: 'pkce',
+    storage: window.localStorage,
+    storageKey: 'supabase.auth.token',
+    // Use dynamic base URL for redirects
+    redirectTo: `${getBaseUrl()}/auth`,
   },
 });
