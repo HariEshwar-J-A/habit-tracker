@@ -45,17 +45,21 @@ export const useAuthStore = create<AuthState>()(
       },
 
       login: async (email: string, password: string) => {
-        if (!email || !password) {
-          throw new Error('Email and password are required');
-        }
-
         try {
           const { data, error } = await supabase.auth.signInWithPassword({
             email: email.trim(),
             password,
           });
 
-          if (error) throw error;
+          if (error) {
+            if (error.message.includes('Email not confirmed')) {
+              throw new Error('Please verify your email before logging in');
+            }
+            if (error.message.includes('Invalid login credentials')) {
+              throw new Error('Invalid email or password');
+            }
+            throw new Error('Login failed. Please try again');
+          }
 
           if (data.user) {
             set({
@@ -68,27 +72,26 @@ export const useAuthStore = create<AuthState>()(
             });
           }
         } catch (error) {
-          console.error('Login error:', error);
-          throw error;
+          if (error instanceof Error) {
+            throw error;
+          }
+          throw new Error('Login failed. Please try again');
         }
       },
 
       signup: async (email: string, password: string) => {
-        if (!email || !password) {
-          throw new Error('Email and password are required');
-        }
-
-        if (password.length < 6) {
-          throw new Error('Password must be at least 6 characters long');
-        }
-
         try {
           const { data, error } = await supabase.auth.signUp({
             email: email.trim(),
             password,
           });
 
-          if (error) throw error;
+          if (error) {
+            if (error.message.includes('already registered')) {
+              throw new Error('This email is already registered');
+            }
+            throw new Error('Signup failed. Please try again');
+          }
 
           if (data.user) {
             set({
@@ -101,8 +104,10 @@ export const useAuthStore = create<AuthState>()(
             });
           }
         } catch (error) {
-          console.error('Signup error:', error);
-          throw error;
+          if (error instanceof Error) {
+            throw error;
+          }
+          throw new Error('Signup failed. Please try again');
         }
       },
 
@@ -110,15 +115,19 @@ export const useAuthStore = create<AuthState>()(
         try {
           const { error } = await supabase.auth.signOut();
           
-          if (error) throw error;
+          if (error) {
+            throw new Error('Logout failed. Please try again');
+          }
 
           set({
             isAuthenticated: false,
             user: null,
           });
         } catch (error) {
-          console.error('Logout error:', error);
-          throw error;
+          if (error instanceof Error) {
+            throw error;
+          }
+          throw new Error('Logout failed. Please try again');
         }
       },
 
@@ -129,7 +138,9 @@ export const useAuthStore = create<AuthState>()(
             type: 'email',
           });
 
-          if (error) throw error;
+          if (error) {
+            throw new Error('Email verification failed. Please try again');
+          }
 
           if (data.user) {
             set((state) => ({
@@ -140,22 +151,24 @@ export const useAuthStore = create<AuthState>()(
             }));
           }
         } catch (error) {
-          console.error('Email verification error:', error);
-          throw error;
+          if (error instanceof Error) {
+            throw error;
+          }
+          throw new Error('Email verification failed. Please try again');
         }
       },
 
       resetPassword: async (email: string) => {
-        if (!email) {
-          throw new Error('Email is required');
-        }
-
         try {
           const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
-          if (error) throw error;
+          if (error) {
+            throw new Error('Password reset failed. Please try again');
+          }
         } catch (error) {
-          console.error('Password reset error:', error);
-          throw error;
+          if (error instanceof Error) {
+            throw error;
+          }
+          throw new Error('Password reset failed. Please try again');
         }
       },
 
@@ -171,10 +184,14 @@ export const useAuthStore = create<AuthState>()(
             email: currentUser.email,
           });
 
-          if (error) throw error;
+          if (error) {
+            throw new Error('Failed to resend verification email');
+          }
         } catch (error) {
-          console.error('Failed to resend verification email:', error);
-          throw error;
+          if (error instanceof Error) {
+            throw error;
+          }
+          throw new Error('Failed to resend verification email');
         }
       },
 
@@ -188,12 +205,16 @@ export const useAuthStore = create<AuthState>()(
             }
           });
 
-          if (error) throw error;
+          if (error) {
+            throw new Error('OAuth login failed. Please try again');
+          }
 
           return data;
         } catch (error) {
-          console.error('OAuth login error:', error);
-          throw error;
+          if (error instanceof Error) {
+            throw error;
+          }
+          throw new Error('OAuth login failed. Please try again');
         }
       },
     }),
