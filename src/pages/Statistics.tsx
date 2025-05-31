@@ -12,10 +12,6 @@ const Statistics = () => {
       exit={{ opacity: 0 }}
     >
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" sx={{ mb: 3 }}>
-          Statistics
-        </Typography>
-        
         <Paper 
           elevation={0} 
           sx={{ 

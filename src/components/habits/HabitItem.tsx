@@ -171,7 +171,7 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Target size={16} style={{ marginRight: '8px', opacity: 0.7 }} />
               <Typography variant="body2" color="text.secondary">
-                Target: {habit.target} times {getFrequencyText(habit.frequency)}
+                Target: {habit.target} {habit.target === 1 ? 'time' : 'times'} {getFrequencyText(habit.frequency)}
               </Typography>
             </Box>
             

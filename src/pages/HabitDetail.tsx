@@ -202,7 +202,7 @@ const HabitDetail = () => {
           <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
             <Chip
               icon={<Target size={16} />}
-              label={`Target: ${habit.target} times ${getFrequencyText(habit.frequency)}`}
+              label={`Target: ${habit.target} ${habit.target === 1 ? 'time' : 'times'} ${getFrequencyText(habit.frequency)}`}
               color="primary"
               variant="outlined"
             />
