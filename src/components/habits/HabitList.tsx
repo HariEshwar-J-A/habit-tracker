@@ -10,7 +10,7 @@ import AddHabitDialog from './AddHabitDialog';
 const HabitList = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { habits, isLoading, fetchHabits } = useHabitStore();
+  const { habitIds, habitEntities, isLoading, fetchHabits } = useHabitStore();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -69,7 +69,7 @@ const HabitList = () => {
         </Button>
       </Box>
 
-      {habits.length === 0 ? (
+      {habitIds.length === 0 ? (
         <Box
           sx={{
             textAlign: 'center',
@@ -102,12 +102,12 @@ const HabitList = () => {
           animate="show"
         >
           <Grid container spacing={2}>
-            {habits.map((habit) => (
-              <Grid item xs={12} sm={6} md={4} key={habit.id}>
+            {habitIds.map((habitId) => (
+              <Grid item xs={12} sm={6} md={4} key={habitId}>
                 <motion.div variants={item}>
                   <HabitItem 
-                    habit={habit} 
-                    onClick={() => handleHabitClick(habit.id)} 
+                    habit={habitEntities[habitId]} 
+                    onClick={() => handleHabitClick(habitId)} 
                   />
                 </motion.div>
               </Grid>

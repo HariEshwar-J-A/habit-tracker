@@ -3,7 +3,8 @@ import { supabase } from '../lib/supabase';
 import { Habit, HabitCompletion } from '../types';
 
 interface HabitState {
-  habits: Habit[];
+  habitIds: string[];
+  habitEntities: Record<string, Habit>;
   isLoading: boolean;
   error: string | null;
   fetchHabits: () => Promise<void>;
@@ -16,7 +17,8 @@ interface HabitState {
 }
 
 export const useHabitStore = create<HabitState>((set, get) => ({
-  habits: [],
+  habitIds: [],
+  habitEntities: {},
   isLoading: false,
   error: null,
 
@@ -44,7 +46,13 @@ export const useHabitStore = create<HabitState>((set, get) => ({
 
       if (error) throw error;
 
-      set({ habits: habits || [], isLoading: false });
+      const habitIds = habits?.map(habit => habit.id) || [];
+      const habitEntities = habits?.reduce((acc, habit) => {
+        acc[habit.id] = habit;
+        return acc;
+      }, {} as Record<string, Habit>) || {};
+
+      set({ habitIds, habitEntities, isLoading: false });
     } catch (error) {
       console.error('Failed to fetch habits:', error);
       set({ error: 'Failed to fetch habits', isLoading: false });
@@ -70,8 +78,16 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       if (error) throw error;
       if (!data) throw new Error('No data returned from insert');
 
-      await get().fetchHabits();
-      set({ isLoading: false });
+      const { habitIds, habitEntities } = get();
+      set({
+        habitIds: [data.id, ...habitIds],
+        habitEntities: {
+          ...habitEntities,
+          [data.id]: data
+        },
+        isLoading: false
+      });
+
       return data.id;
     } catch (error) {
       console.error('Failed to add habit:', error);
@@ -83,18 +99,27 @@ export const useHabitStore = create<HabitState>((set, get) => ({
   updateHabit: async (id, habitData) => {
     set({ isLoading: true, error: null });
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('habits')
         .update({
           ...habitData,
           updated_at: new Date().toISOString()
         })
-        .eq('id', id);
+        .eq('id', id)
+        .select()
+        .single();
 
       if (error) throw error;
+      if (!data) throw new Error('No data returned from update');
 
-      await get().fetchHabits();
-      set({ isLoading: false });
+      const { habitEntities } = get();
+      set({
+        habitEntities: {
+          ...habitEntities,
+          [id]: data
+        },
+        isLoading: false
+      });
     } catch (error) {
       console.error('Failed to update habit:', error);
       set({ error: 'Failed to update habit', isLoading: false });
@@ -112,8 +137,15 @@ export const useHabitStore = create<HabitState>((set, get) => ({
 
       if (error) throw error;
 
-      await get().fetchHabits();
-      set({ isLoading: false });
+      const { habitIds, habitEntities } = get();
+      const newEntities = { ...habitEntities };
+      delete newEntities[id];
+
+      set({
+        habitIds: habitIds.filter(habitId => habitId !== id),
+        habitEntities: newEntities,
+        isLoading: false
+      });
     } catch (error) {
       console.error('Failed to delete habit:', error);
       set({ error: 'Failed to delete habit', isLoading: false });
@@ -122,6 +154,10 @@ export const useHabitStore = create<HabitState>((set, get) => ({
   },
 
   toggleHabitCompletion: async (habitId, date) => {
+    const { habitEntities } = get();
+    const originalHabit = { ...habitEntities[habitId] };
+    let optimisticComplete = true;
+
     try {
       const { data: existing, error: checkError } = await supabase
         .from('habit_completions')
@@ -133,6 +169,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       if (checkError) throw checkError;
 
       if (existing) {
+        optimisticComplete = false;
         const { error: deleteError } = await supabase
           .from('habit_completions')
           .delete()
@@ -155,20 +192,35 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       const { currentStreak, longestStreak } = await get().calculateStreak(habitId);
 
       // Update the habit with new streak values
-      const { error: updateError } = await supabase
+      const { data: updatedHabit, error: updateError } = await supabase
         .from('habits')
         .update({
           current_streak: currentStreak,
           longest_streak: longestStreak,
           updated_at: new Date().toISOString()
         })
-        .eq('id', habitId);
+        .eq('id', habitId)
+        .select()
+        .single();
 
       if (updateError) throw updateError;
+      if (!updatedHabit) throw new Error('No data returned from update');
 
-      // Refresh habits list
-      await get().fetchHabits();
+      // Update only the specific habit in the store
+      set(state => ({
+        habitEntities: {
+          ...state.habitEntities,
+          [habitId]: updatedHabit
+        }
+      }));
     } catch (error) {
+      // Revert to original habit state on error
+      set(state => ({
+        habitEntities: {
+          ...state.habitEntities,
+          [habitId]: originalHabit
+        }
+      }));
       console.error('Failed to toggle habit completion:', error);
       throw error;
     }

@@ -12,7 +12,7 @@ interface StatsDashboardProps {
 
 const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
   const theme = useTheme();
-  const { habits, getHabitCompletions } = useHabitStore();
+  const { habitIds, habitEntities, getHabitCompletions } = useHabitStore();
   const [stats, setStats] = useState<HabitStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,9 +32,10 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
           const startDate = new Date();
           startDate.setFullYear(startDate.getFullYear() - 1);
           
-          for (const habit of habits) {
+          for (const habitId of habitIds) {
             if (!mounted) return;
-            const completions = await getHabitCompletions(habit.id, startDate, endDate);
+            const habit = habitEntities[habitId];
+            const completions = await getHabitCompletions(habitId, startDate, endDate);
             totalCompletions += completions.length;
             bestStreak = Math.max(bestStreak, habit.longest_streak);
             totalCurrentStreak += habit.current_streak;
@@ -43,11 +44,11 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
           if (!mounted) return;
           
           calculatedStats = {
-            currentStreak: Math.round(totalCurrentStreak / Math.max(1, habits.length)),
+            currentStreak: Math.round(totalCurrentStreak / Math.max(1, habitIds.length)),
             longestStreak: bestStreak,
             totalCompletions,
-            completionRate: habits.length > 0 
-              ? (totalCompletions / (365 * habits.length)) * 100 
+            completionRate: habitIds.length > 0 
+              ? (totalCompletions / (365 * habitIds.length)) * 100 
               : 0,
           };
         } else if (habit) {
@@ -99,7 +100,7 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
     return () => {
       mounted = false;
     };
-  }, [habit, allHabits, habits, getHabitCompletions]);
+  }, [habit, allHabits, habitIds, habitEntities, getHabitCompletions]);
 
   if (loading) {
     return (

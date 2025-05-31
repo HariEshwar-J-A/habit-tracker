@@ -5,7 +5,6 @@ import {
   Typography, 
   Button, 
   IconButton, 
-  Divider, 
   Dialog, 
   DialogTitle, 
   DialogContent, 
@@ -28,43 +27,27 @@ const HabitDetail = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { habits, fetchHabits, deleteHabit } = useHabitStore();
+  const { habitEntities, deleteHabit } = useHabitStore();
   
-  const [habit, setHabit] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [habit, setHabit] = useState(id ? habitEntities[id] : null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   
   useEffect(() => {
-    const loadHabit = async () => {
-      if (!id) {
-        navigate('/', { replace: true });
-        return;
-      }
+    if (!id) {
+      navigate('/', { replace: true });
+      return;
+    }
 
-      setLoading(true);
-      try {
-        await fetchHabits();
-        const foundHabit = habits.find(h => h.id === id);
-        
-        if (foundHabit) {
-          setHabit(foundHabit);
-        } else {
-          navigate('/', { replace: true });
-          toast.error('Habit not found');
-        }
-      } catch (error) {
-        console.error('Failed to load habit:', error);
-        toast.error('Failed to load habit');
-        navigate('/', { replace: true });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadHabit();
-  }, [id, fetchHabits, habits, navigate]);
+    const currentHabit = habitEntities[id];
+    if (currentHabit) {
+      setHabit(currentHabit);
+    } else {
+      navigate('/', { replace: true });
+      toast.error('Habit not found');
+    }
+  }, [id, habitEntities, navigate]);
   
   const handleEditClick = () => {
     setEditDialogOpen(true);
@@ -98,14 +81,6 @@ const HabitDetail = () => {
       setDeleteDialogOpen(false);
     }
   };
-  
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
   
   if (!habit) {
     return (
