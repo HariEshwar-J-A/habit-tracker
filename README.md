@@ -134,10 +134,6 @@ A beautiful, feature-rich Progressive Web Application for tracking and building 
   - Performance metrics
 
 ### 💾 Data Management
-- Local data storage with IndexedDB
-  - Offline-first architecture
-  - Fast local access
-  - Data persistence
 - Real-time sync with Supabase
   - Automatic synchronization
   - Conflict resolution
@@ -150,10 +146,6 @@ A beautiful, feature-rich Progressive Web Application for tracking and building 
   - Regular backups
   - Data restoration
   - Error recovery
-- Offline support
-  - Full offline functionality
-  - Background sync
-  - Data consistency
 
 ## Tech Stack
 
