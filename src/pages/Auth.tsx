@@ -43,7 +43,7 @@ const features = [
   {
     icon: <Bell size={32} />,
     title: 'Smart Reminders',
-    description: 'Never miss a habit with customizable reminders. Get notifications at the right time to stay on track.'
+    description: 'Never miss a habit with customizable reminders. Get notifications at the right time to stay on track. (Customizations coming soon!)'
   },
   {
     icon: <Database size={32} />,
