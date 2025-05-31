@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper, CircularProgress, useTheme } from '@mui/material';
+import { Box, Typography, Grid, Paper, CircularProgress, useTheme, useMediaQuery } from '@mui/material';
 import { Award, Calendar, TrendingUp, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useHabitStore } from '../../stores/habitStore';
@@ -12,6 +12,7 @@ interface StatsDashboardProps {
 
 const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
   const theme = useTheme();
+  const isBelow720px = useMediaQuery('(max-width:719px)');
   const { habitIds, habitEntities, getHabitCompletions } = useHabitStore();
   const [stats, setStats] = useState<HabitStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -165,7 +166,7 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
       animate="show"
     >
       <Grid container spacing={2}>
-        <Grid item xs={6} md={3}>
+        <Grid item xs={isBelow720px ? 12 : 6} md={3}>
           <motion.div variants={item}>
             <StatCard
               title="Current Streak"
@@ -176,7 +177,7 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
           </motion.div>
         </Grid>
         
-        <Grid item xs={6} md={3}>
+        <Grid item xs={isBelow720px ? 12 : 6} md={3}>
           <motion.div variants={item}>
             <StatCard
               title="Longest Streak"
@@ -187,7 +188,7 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
           </motion.div>
         </Grid>
         
-        <Grid item xs={6} md={3}>
+        <Grid item xs={isBelow720px ? 12 : 6} md={3}>
           <motion.div variants={item}>
             <StatCard
               title="Total Completions"
@@ -198,7 +199,7 @@ const StatsDashboard = ({ habit, allHabits = false }: StatsDashboardProps) => {
           </motion.div>
         </Grid>
         
-        <Grid item xs={6} md={3}>
+        <Grid item xs={isBelow720px ? 12 : 6} md={3}>
           <motion.div variants={item}>
             <StatCard
               title="Completion Rate"

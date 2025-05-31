@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Box, Typography, Paper, useTheme, useMediaQuery } from '@mui/material';
+import { useState, useEffect, useMemo } from 'react';
+import { Box, Typography, Paper, useTheme, useMediaQuery, IconButton } from '@mui/material';
 import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useHabitStore } from '../../stores/habitStore';
 
 interface StreakCalendarHeatmapProps {
@@ -9,24 +10,35 @@ interface StreakCalendarHeatmapProps {
 
 const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
   const theme = useTheme();
+  const isBelow720px = useMediaQuery('(max-width:719px)');
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { getHabitCompletions } = useHabitStore();
   const [completionMap, setCompletionMap] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
-
+  
   const currentDate = new Date();
-  const currentMonth = currentDate.getMonth();
-  const currentYear = currentDate.getFullYear();
+  const [displayMonth, setDisplayMonth] = useState(currentDate.getMonth());
+  const [displayYear, setDisplayYear] = useState(currentDate.getFullYear());
 
-  // Show fewer months on mobile for better UX
-  const monthsToShow = isMobile ? 4 : 12;
+  const monthsToShow = isBelow720px ? 1 : (isMobile ? 4 : 12);
 
-  const months = [];
-  for (let i = 0; i < monthsToShow; i++) {
-    const monthIndex = (currentMonth - i + 12) % 12;
-    const year = currentYear - (monthIndex > currentMonth ? 1 : 0);
-    months.unshift({ monthIndex, year });
-  }
+  const months = useMemo(() => {
+    if (isBelow720px) {
+      return [{ monthIndex: displayMonth, year: displayYear }];
+    }
+
+    const result = [];
+    let currentMonth = currentDate.getMonth();
+    let currentYear = currentDate.getFullYear();
+
+    for (let i = 0; i < monthsToShow; i++) {
+      const monthIndex = (currentMonth - i + 12) % 12;
+      const year = currentYear - (monthIndex > currentMonth ? 1 : 0);
+      result.unshift({ monthIndex, year });
+    }
+
+    return result;
+  }, [monthsToShow, isBelow720px, displayMonth, displayYear, currentDate]);
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -37,7 +49,13 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
       try {
         const endDate = new Date();
         const startDate = new Date();
-        startDate.setMonth(startDate.getMonth() - monthsToShow);
+        
+        if (isBelow720px) {
+          startDate.setFullYear(displayYear, displayMonth, 1);
+          endDate.setFullYear(displayYear, displayMonth + 1, 0);
+        } else {
+          startDate.setMonth(startDate.getMonth() - monthsToShow);
+        }
 
         const completions = await getHabitCompletions(habitId, startDate, endDate);
         const map: Record<string, boolean> = {};
@@ -56,7 +74,30 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
     if (habitId) {
       fetchCompletions();
     }
-  }, [habitId, getHabitCompletions, monthsToShow]);
+  }, [habitId, getHabitCompletions, monthsToShow, isBelow720px, displayMonth, displayYear]);
+
+  const handlePrevMonth = () => {
+    if (displayMonth === 0) {
+      setDisplayMonth(11);
+      setDisplayYear(prev => prev - 1);
+    } else {
+      setDisplayMonth(prev => prev - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    const now = new Date();
+    const isCurrentMonth = displayMonth === now.getMonth() && displayYear === now.getFullYear();
+    
+    if (isCurrentMonth) return;
+
+    if (displayMonth === 11) {
+      setDisplayMonth(0);
+      setDisplayYear(prev => prev + 1);
+    } else {
+      setDisplayMonth(prev => prev + 1);
+    }
+  };
 
   const getCellColor = (date: string) => {
     if (!completionMap[date]) {
@@ -74,7 +115,6 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
       
       const monthCells = [];
       
-      // Add day headers for each month
       weekDays.forEach((day, index) => {
         monthCells.push(
           <Typography
@@ -107,7 +147,7 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
             transition={{ duration: 0.2, delay: 0.01 * d }}
             style={{
               gridColumn: dayOfWeek === 0 ? 7 : dayOfWeek,
-              gridRow: Math.ceil(d / 7) + 1, // Offset by 1 for header row
+              gridRow: Math.ceil(d / 7) + 1,
             }}
           >
             <Box
@@ -143,17 +183,19 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
             scrollSnapAlign: 'start',
           }}
         >
-          <Typography 
-            variant="subtitle1" 
-            sx={{ 
-              mb: 2,
-              fontSize: isMobile ? '0.8rem' : '1rem',
-              fontWeight: 500,
-              color: theme.palette.text.primary,
-            }}
-          >
-            {monthNames[monthIndex].slice(0, 3)} {year}
-          </Typography>
+          {!isBelow720px && (
+            <Typography 
+              variant="subtitle1" 
+              sx={{ 
+                mb: 2,
+                fontSize: isMobile ? '0.8rem' : '1rem',
+                fontWeight: 500,
+                color: theme.palette.text.primary,
+              }}
+            >
+              {monthNames[monthIndex]} {year}
+            </Typography>
+          )}
           <Box
             sx={{
               display: 'grid',
@@ -183,22 +225,61 @@ const StreakCalendarHeatmap = ({ habitId }: StreakCalendarHeatmapProps) => {
         border: `1px solid ${theme.palette.divider}`,
       }}
     >
-      <Typography 
-        variant="h6" 
-        sx={{ 
-          mb: 3,
-          fontSize: isMobile ? '1rem' : '1.25rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-        }}
-      >
-        Activity Heatmap
-      </Typography>
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between',
+        mb: 3,
+      }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontSize: isMobile ? '1rem' : '1.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
+          Activity Heatmap
+        </Typography>
+
+        {isBelow720px && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton 
+              onClick={handlePrevMonth}
+              size="small"
+            >
+              <ChevronLeft size={20} />
+            </IconButton>
+            
+            <Typography 
+              variant="subtitle1"
+              sx={{ 
+                minWidth: '120px',
+                textAlign: 'center',
+                fontSize: '0.9rem',
+              }}
+            >
+              {monthNames[displayMonth]} {displayYear}
+            </Typography>
+            
+            <IconButton 
+              onClick={handleNextMonth}
+              size="small"
+              disabled={
+                displayMonth === currentDate.getMonth() && 
+                displayYear === currentDate.getFullYear()
+              }
+            >
+              <ChevronRight size={20} />
+            </IconButton>
+          </Box>
+        )}
+      </Box>
       
       <Box sx={{ 
         display: 'flex',
-        overflowX: 'auto',
+        overflowX: isBelow720px ? 'hidden' : 'auto',
         overflowY: 'hidden',
         pb: 2,
         mx: isMobile ? -1 : 0,
