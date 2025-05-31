@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -9,20 +9,19 @@ import {
   Button,
   Divider,
   Alert,
-  IconButton,
   useTheme,
-  Grid,
-  Card,
-  CardContent,
+  IconButton,
 } from '@mui/material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mail,
   Lock,
   Calendar,
   Shield,
   Database,
-  Users,
+  Bell,
+  Palette,
+  BarChart,
   Github,
 } from 'lucide-react';
 import GoogleIcon from '@mui/icons-material/Google';
@@ -32,24 +31,34 @@ import { toast } from 'react-toastify';
 
 const features = [
   {
-    icon: <Calendar size={24} />,
-    title: 'Simple Habit Tracking',
-    description: 'Track your daily habits with an intuitive interface'
+    icon: <Calendar size={32} />,
+    title: 'Smart Habit Tracking',
+    description: 'Track daily, weekly, or monthly habits with an intuitive interface. Set custom goals and watch your progress grow.'
   },
   {
-    icon: <Shield size={24} />,
-    title: 'Privacy First',
-    description: 'Your data stays on your device, never uploaded without consent'
+    icon: <BarChart size={32} />,
+    title: 'Visual Progress',
+    description: 'Monitor your progress with beautiful charts, streaks, and detailed statistics. Stay motivated with visual feedback.'
   },
   {
-    icon: <Database size={24} />,
-    title: 'Works Offline',
-    description: 'Full functionality even without internet connection'
+    icon: <Bell size={32} />,
+    title: 'Smart Reminders',
+    description: 'Never miss a habit with customizable reminders. Get notifications at the right time to stay on track.'
   },
   {
-    icon: <Users size={24} />,
-    title: 'Coming Soon: Community',
-    description: 'Share goals and motivate each other (Premium feature)'
+    icon: <Database size={32} />,
+    title: 'Offline-First',
+    description: 'Keep tracking habits even without internet. Your data syncs automatically when you're back online.'
+  },
+  {
+    icon: <Shield size={32} />,
+    title: 'Secure & Private',
+    description: 'Your data is encrypted and stored securely. Take control of your privacy with local-first storage.'
+  },
+  {
+    icon: <Palette size={32} />,
+    title: 'Personalized Experience',
+    description: 'Customize the app with themes, colors, and habit icons. Make it truly yours.'
   }
 ];
 
@@ -57,12 +66,21 @@ const Auth = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { login, signup, loginWithProvider } = useAuthStore();
-  const { themeMode, themeColor, setTheme } = useThemeStore();
+  const { themeMode } = useThemeStore();
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [currentFeatureIndex, setCurrentFeatureIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentFeatureIndex((prev) => (prev + 1) % features.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,80 +116,99 @@ const Auth = () => {
     }
   };
 
-  const themes = ['blue', 'purple', 'teal', 'amber', 'pink'];
-  const [currentThemeIndex, setCurrentThemeIndex] = useState(0);
-
-  const switchTheme = () => {
-    const nextIndex = (currentThemeIndex + 1) % themes.length;
-    setCurrentThemeIndex(nextIndex);
-    setTheme(themeMode, themes[nextIndex]);
-  };
-
   return (
     <Container maxWidth="lg">
       <Box sx={{ py: 8 }}>
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={7}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
+          <Box sx={{ flex: 1 }}>
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <Typography variant="h2" gutterBottom>
+              <Typography variant="h2" gutterBottom sx={{ fontSize: { xs: '2.5rem', md: '3.5rem' } }}>
                 Build Better Habits,
                 <br />
                 One Day at a Time
               </Typography>
               
               <Typography variant="h5" color="text.secondary" paragraph>
-                A privacy-focused habit tracker that works offline and keeps your data local.
-                Free for early adopters!
+                A beautiful and powerful habit tracker that works for you.
               </Typography>
 
-              <Box sx={{ mt: 4 }}>
-                <Grid container spacing={3}>
-                  {features.map((feature, index) => (
-                    <Grid item xs={12} sm={6} key={index}>
-                      <Card 
-                        elevation={0}
-                        sx={{ 
-                          height: '100%',
-                          bgcolor: 'background.paper',
-                          border: `1px solid ${theme.palette.divider}`
-                        }}
-                      >
-                        <CardContent>
-                          <Box sx={{ color: theme.palette.primary.main, mb: 1 }}>
-                            {feature.icon}
-                          </Box>
-                          <Typography variant="h6" gutterBottom>
-                            {feature.title}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {feature.description}
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
-
-              <Box sx={{ mt: 4 }}>
-                <Typography variant="h6" gutterBottom>
-                  Try our themes
-                </Typography>
-                <Button
-                  variant="outlined"
-                  onClick={switchTheme}
+              <Box sx={{ mt: 6, mb: 4 }}>
+                <Paper 
+                  elevation={0}
+                  sx={{ 
+                    p: 4,
+                    bgcolor: theme.palette.background.paper,
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: 2,
+                    minHeight: '280px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
                 >
-                  Switch Theme
-                </Button>
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentFeatureIndex}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <Box sx={{ textAlign: 'center' }}>
+                        <Box sx={{ 
+                          color: theme.palette.primary.main,
+                          mb: 2,
+                          display: 'flex',
+                          justifyContent: 'center'
+                        }}>
+                          {features[currentFeatureIndex].icon}
+                        </Box>
+                        <Typography variant="h4" gutterBottom>
+                          {features[currentFeatureIndex].title}
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary">
+                          {features[currentFeatureIndex].description}
+                        </Typography>
+                      </Box>
+                    </motion.div>
+                  </AnimatePresence>
+                </Paper>
+
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  gap: 1,
+                  mt: 2 
+                }}>
+                  {features.map((_, index) => (
+                    <Box
+                      key={index}
+                      onClick={() => setCurrentFeatureIndex(index)}
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        bgcolor: index === currentFeatureIndex 
+                          ? theme.palette.primary.main 
+                          : theme.palette.action.disabled,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          transform: 'scale(1.2)',
+                        }
+                      }}
+                    />
+                  ))}
+                </Box>
               </Box>
             </motion.div>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} md={5}>
+          <Box sx={{ width: { xs: '100%', md: '400px' } }}>
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -217,7 +254,7 @@ const Auth = () => {
                   />
 
                   {error && (
-                    <Alert severity="error\" sx={{ mt: 2 }}>
+                    <Alert severity="error" sx={{ mt: 2 }}>
                       {error}
                     </Alert>
                   )}
@@ -266,8 +303,8 @@ const Auth = () => {
                 </Box>
               </Paper>
             </motion.div>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Box>
     </Container>
   );
