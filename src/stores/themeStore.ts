@@ -53,7 +53,7 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
         
         set({
           theme: getDefaultTheme(),
-          themeMode: 'light',
+          themeMode: 'dark',
           themeColor: 'blue'
         });
         
