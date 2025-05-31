@@ -12,9 +12,10 @@ import {
   CircularProgress,
   useTheme,
   useMediaQuery,
-  Paper
+  Paper,
+  Chip
 } from '@mui/material';
-import { ArrowLeft, Edit2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useHabitStore } from '../stores/habitStore';
 import StreakCalendarHeatmap from '../components/habits/StreakCalendarHeatmap';
@@ -79,6 +80,19 @@ const HabitDetail = () => {
     } finally {
       setDeleting(false);
       setDeleteDialogOpen(false);
+    }
+  };
+
+  const getFrequencyText = (frequency: string) => {
+    switch (frequency) {
+      case 'daily':
+        return 'per day';
+      case 'weekly':
+        return 'per week';
+      case 'monthly':
+        return 'per month';
+      default:
+        return '';
     }
   };
   
@@ -185,20 +199,18 @@ const HabitDetail = () => {
             </Typography>
           )}
 
-          <Box 
-            sx={{ 
-              display: 'inline-block',
-              px: 2,
-              py: 1,
-              borderRadius: 1,
-              bgcolor: habit.color,
-              color: 'white',
-              mb: 3
-            }}
-          >
-            <Typography variant="body2">
-              {habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)} habit
-            </Typography>
+          <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+            <Chip
+              icon={<Target size={16} />}
+              label={`Target: ${habit.target} times ${getFrequencyText(habit.frequency)}`}
+              color="primary"
+              variant="outlined"
+            />
+            
+            <Chip
+              sx={{ bgcolor: habit.color, color: 'white' }}
+              label={`${habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)} habit`}
+            />
           </Box>
 
           <Box sx={{ mb: 4 }}>

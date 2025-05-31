@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardActionArea, Typography, Box, Checkbox, CircularProgress } from '@mui/material';
-import { CheckCircle, Circle } from 'lucide-react';
+import { CheckCircle, Circle, Target } from 'lucide-react';
 import { motion, useAnimation } from 'framer-motion';
 import { Habit } from '../../types';
 import { useHabitStore } from '../../stores/habitStore';
@@ -92,6 +92,19 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
       setChecking(false);
     }
   };
+
+  const getFrequencyText = (frequency: string) => {
+    switch (frequency) {
+      case 'daily':
+        return 'per day';
+      case 'weekly':
+        return 'per week';
+      case 'monthly':
+        return 'per month';
+      default:
+        return '';
+    }
+  };
   
   return (
     <motion.div
@@ -154,6 +167,13 @@ const HabitItem = ({ habit, onClick }: HabitItemProps) => {
                 {habit.description}
               </Typography>
             )}
+
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Target size={16} style={{ marginRight: '8px', opacity: 0.7 }} />
+              <Typography variant="body2" color="text.secondary">
+                Target: {habit.target} times {getFrequencyText(habit.frequency)}
+              </Typography>
+            </Box>
             
             <Box sx={{ mt: 'auto', display: 'flex', gap: 2, pt: 1 }}>
               <Box>
