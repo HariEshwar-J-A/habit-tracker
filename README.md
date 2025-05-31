@@ -1,6 +1,6 @@
 # Habit Tracker PWA
 
-A beautiful, feature-rich Progressive Web Application for tracking and building daily habits. Built with React, TypeScript, and Material UI, featuring offline support, dark mode, and real-time synchronization.
+A beautiful, feature-rich Progressive Web Application for tracking and building daily habits. Built with React, TypeScript, and Material UI, featuring offline support for cached assets, dark mode, and real-time data synchronization with Supabase.
 
 ![Habit Tracker Screenshot](https://images.pexels.com/photos/5386754/pexels-photo-5386754.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2)
 
@@ -48,10 +48,10 @@ A beautiful, feature-rich Progressive Web Application for tracking and building 
   - Custom install prompts
   - App icon and splash screen
   - Native-like experience
-- Works offline with full functionality
-  - IndexedDB for local data storage
-  - Background sync when online
+- Works offline with cached assets
+  - Theme and settings persistence
   - Cached assets and resources
+  - Automatic sync with Supabase when online
 - Automatic updates when new versions are available
   - Service worker update flow
   - Update notification system
@@ -187,10 +187,9 @@ A beautiful, feature-rich Progressive Web Application for tracking and building 
     - PostgreSQL database
     - Real-time subscriptions
     - Row Level Security
-  - IndexedDB (Local)
-    - Offline storage
-    - Fast local access
-    - Data persistence
+  - IndexedDB
+    - Theme and settings storage
+    - Data export/import functionality
 
 - **Authentication**: 
   - Supabase Auth
@@ -401,38 +400,12 @@ src/
   - Resource protection
   - Origin validation
 
-## 🔄 Data Synchronization
-
-The app implements a robust data synchronization strategy:
-
-1. **Local-First**: All data is stored locally first
-   - Immediate UI updates
-   - Offline support
-   - Fast access
-
-2. **Background Sync**: Changes are synchronized when online
-   - Automatic sync
-   - Retry mechanism
-   - Error handling
-
-3. **Conflict Resolution**: Latest-write-wins strategy
-   - Timestamp-based resolution
-   - Data consistency
-   - Version tracking
-
-4. **Offline Support**: Full functionality without internet
-   - IndexedDB storage
-   - Service worker caching
-   - Background sync queue
-
-5. **Data Export**: Backup and transfer capabilities
-   - JSON export
-   - Data portability
-   - Backup management
-
 ## 🎯 Future Scope
 
 ### Planned Features
+- Enhanced offline capabilities with full offline-first architecture
+- Local-first data storage with background synchronization
+- Conflict resolution for offline changes
 - Social features and habit sharing
 - Advanced analytics and insights
 - Custom habit categories
@@ -445,7 +418,7 @@ The app implements a robust data synchronization strategy:
 ### Technical Improvements
 - Enhanced offline capabilities
 - Performance optimizations
-- Advanced caching strategies
+- Advanced data caching and synchronization
 - Real-time collaboration
 - Machine learning insights
 - Automated testing
