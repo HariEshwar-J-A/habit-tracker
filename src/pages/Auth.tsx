@@ -254,7 +254,7 @@ const Auth = () => {
                   />
 
                   {error && (
-                    <Alert severity="error" sx={{ mt: 2 }}>
+                    <Alert severity="error\" sx={{ mt: 2 }}>
                       {error}
                     </Alert>
                   )}
