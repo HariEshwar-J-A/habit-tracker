@@ -48,7 +48,7 @@ const features = [
   {
     icon: <Database size={32} />,
     title: 'Offline-First',
-    description: 'Keep tracking habits even without internet. Your data syncs automatically when you're back online.'
+    description: 'Keep tracking habits even without internet. Your data syncs automatically when you\'re back online.'
   },
   {
     icon: <Shield size={32} />,
@@ -254,7 +254,7 @@ const Auth = () => {
                   />
 
                   {error && (
-                    <Alert severity="error\" sx={{ mt: 2 }}>
+                    <Alert severity="error" sx={{ mt: 2 }}>
                       {error}
                     </Alert>
                   )}
