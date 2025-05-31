@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import { motion } from 'framer-motion';
 import HabitList from '../components/habits/HabitList';
 import StatsDashboard from '../components/habits/StatsDashboard';
@@ -13,16 +13,7 @@ const Dashboard = () => {
       exit={{ opacity: 0 }}
     >
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" component="h1">
-            Dashboard
-          </Typography>
-        </Box>
-        
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Overall Stats
-          </Typography>
           <StatsDashboard allHabits={true} />
         </Box>
         
