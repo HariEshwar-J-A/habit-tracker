@@ -41,11 +41,6 @@ const features = [
     description: 'Monitor your progress with beautiful charts, streaks, and detailed statistics. Stay motivated with visual feedback.'
   },
   {
-    icon: <Bell size={32} />,
-    title: 'Smart Reminders',
-    description: 'Never miss a habit with customizable reminders. Get notifications at the right time to stay on track.'
-  },
-  {
     icon: <Database size={32} />,
     title: 'Offline-First',
     description: 'Keep tracking habits even without internet. Your data syncs automatically when you\'re back online.'
@@ -59,6 +54,10 @@ const features = [
     icon: <Palette size={32} />,
     title: 'Personalized Experience',
     description: 'Customize the app with themes, colors, and habit icons. Make it truly yours.'
+  },{
+    icon: <Bell size={32} />,
+    title: 'Smart Reminders',
+    description: 'Never miss a habit with notifications at the right time to stay on track - customizable remainders coming soon!'
   }
 ];
 
