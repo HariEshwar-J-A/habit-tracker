@@ -162,11 +162,7 @@ Expected JSON format:
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" sx={{ mb: 3 }}>
-          Settings
-        </Typography>
-        
+      <Box sx={{ mb: 4 }}>   
         <Box sx={{ mb: 4 }}>
           <Typography variant="h5" sx={{ mb: 2 }}>
             Appearance
