@@ -6,6 +6,7 @@ import { CircularProgress, Box } from '@mui/material';
 import { AnimatePresence } from 'framer-motion';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Howler } from 'howler';
 
 import Layout from './components/layout/Layout';
 import { useThemeStore } from './stores/themeStore';
@@ -25,6 +26,27 @@ function App() {
   const { isAuthenticated, user, setUser } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Initialize AudioContext on first user interaction
+  useEffect(() => {
+    const resumeAudioContext = () => {
+      if (Howler.ctx?.state === 'suspended') {
+        Howler.ctx.resume().then(() => {
+          // Remove listeners once AudioContext is resumed
+          document.body.removeEventListener('click', resumeAudioContext);
+          document.body.removeEventListener('touchstart', resumeAudioContext);
+        }).catch(console.error);
+      }
+    };
+
+    document.body.addEventListener('click', resumeAudioContext);
+    document.body.addEventListener('touchstart', resumeAudioContext);
+
+    return () => {
+      document.body.removeEventListener('click', resumeAudioContext);
+      document.body.removeEventListener('touchstart', resumeAudioContext);
+    };
+  }, []);
 
   // Handle email verification callback
   useEffect(() => {
