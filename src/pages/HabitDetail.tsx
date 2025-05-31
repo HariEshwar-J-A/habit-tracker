@@ -104,16 +104,15 @@ const HabitDetail = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <Box sx={{ 
-        mb: 4,
-        mx: isMobile ? -2 : 0
-      }}>
+      <Box sx={{ mb: 4 }}>
         <Paper 
           elevation={0}
           sx={{ 
             p: isMobile ? 2 : 3,
             bgcolor: theme.palette.background.paper,
-            borderRadius: isMobile ? 0 : 2
+            borderRadius: isMobile ? '0 0 8px 8px' : 2,
+            border: `1px solid ${theme.palette.divider}`,
+            borderTop: isMobile ? 'none' : `1px solid ${theme.palette.divider}`
           }}
         >
           <Box sx={{ 
@@ -150,14 +149,14 @@ const HabitDetail = () => {
             <Box sx={{ 
               display: 'flex',
               gap: 1,
-              width: isMobile ? '100%' : 'auto',
-              justifyContent: 'flex-end'
+              width: isMobile ? '100%' : 'auto'
             }}>
               <Button
                 startIcon={<Edit2 size={18} />}
                 onClick={handleEditClick}
                 variant="outlined"
                 size={isMobile ? 'small' : 'medium'}
+                fullWidth={isMobile}
               >
                 Edit
               </Button>
@@ -167,6 +166,7 @@ const HabitDetail = () => {
                 variant="outlined"
                 color="error"
                 size={isMobile ? 'small' : 'medium'}
+                fullWidth={isMobile}
               >
                 Delete
               </Button>
