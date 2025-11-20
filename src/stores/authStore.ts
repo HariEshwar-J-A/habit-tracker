@@ -111,24 +111,23 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      logout: async () => {
-        try {
-          const { error } = await supabase.auth.signOut();
-          
-          if (error) {
-            throw new Error('Logout failed. Please try again');
-          }
-
-          set({
-            isAuthenticated: false,
-            user: null,
-          });
-        } catch (error) {
-          if (error instanceof Error) {
-            throw error;
-          }
-          throw new Error('Logout failed. Please try again');
-        }
+      114
+        () => {
+      // Always clear local state, regardless of API call success
+      // This handles cases where the session doesn't exist on the server
+      try {
+        await supabase.auth.signOut();
+      } catch (error) {
+        // Ignore signOut errors - we'll clear local state anyway
+        console.error('SignOut API error (clearing local state anyway):', error);
+      }
+      
+      // Always clear authentication state
+      set({
+        isAuthenticated: false,
+        user: null,
+      });
+    
       },
 
       verifyEmail: async (token: string) => {
