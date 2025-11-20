@@ -111,7 +111,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      114
     logout: async         () => {
       // Always clear local state, regardless of API call success
       // This handles cases where the session doesn't exist on the server
