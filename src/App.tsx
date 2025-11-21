@@ -11,7 +11,7 @@ import { Howler } from 'howler';
 import Layout from './components/layout/Layout';
 import { useThemeStore } from './stores/themeStore';
 import { useAuthStore } from './stores/authStore';
-import { supabase, handleEmailVerification } from './lib/supabase';
+import { supabase, handleAuthCallback } from './lib/supabase';
 
 // Lazy load pages
 const Auth = lazy(() => import('./pages/Auth'));
@@ -52,17 +52,16 @@ function App() {
   useEffect(() => {
     if (location.pathname === '/auth/callback') {
       const handleCallback = async () => {
-        try {
-          await handleEmailVerification();
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            setUser(user);
-            navigate('/', { replace: true });
-          }
-        } catch (error) {
-          console.error('Verification error:', error);
-          navigate('/auth', { replace: true });
+        ttry {
+        const result = await handleAuthCallback();
+        if (result.user) {
+          setUser(result.user);
+          navigate('/', { replace: true });
         }
+      } catch (error) {
+        console.error('Auth callback error:', error);
+        navigate('/auth', { replace: true });
+      }
       };
       handleCallback();
     }
