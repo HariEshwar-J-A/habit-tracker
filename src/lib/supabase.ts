@@ -24,19 +24,51 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-// Handle email verification callback
-export const handleEmailVerification = async () => {
-  const params = new URLSearchParams(window.location.hash.substring(1));
-  const token = params.get('confirmation_token');
-  
-  if (token) {
-    const { error } = await supabase.auth.verifyOtp({
-      token_hash: token,
-      type: 'email',
-    });
+// Handle both OAuth and email verification callbacks
+export const handleAuthCallback = async () => {
+  try {
+    // Check if this is an OAuth callback (has 'code' parameter)
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
     
-    if (error) {
-      throw error;
+    const code = urlParams.get('code');
+    const emailToken = hashParams.get('confirmation_token');
+    
+    if (code) {
+      // OAuth callback - exchange code for session
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      
+      if (error) {
+        console.error('OAuth callback error:', error);
+        throw new Error('Failed to complete sign in. Please try again.');
+      }
+      
+      return { user: data.user, type: 'oauth' };
+    } else if (emailToken) {
+      // Email verification callback
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: emailToken,
+        type: 'email',
+      });
+      
+      if (error) {
+        console.error('Email verification error:', error);
+        throw new Error('Email verification failed. Please try again.');
+      }
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      return { user, type: 'email' };
     }
+    
+    return { user: null, type: 'unknown' };
+  } catch (error) {
+    console.error('Auth callback error:', error);
+    throw error;
   }
+};
+
+// Keep the old function for backwards compatibility
+export const handleEmailVerification = async () => {
+  const result = await handleAuthCallback();
+  return result;
 };
