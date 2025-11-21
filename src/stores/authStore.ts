@@ -197,10 +197,8 @@ export const useAuthStore = create<AuthState>()(
         try {
           const { data, error } = await supabase.auth.signInWithOAuth({
             provider,
-            options: {
-              redirectTo: `${window.location.origin}/auth/callback`,
-              skipBrowserRedirect: false,
-            }
+      // redirectTo is already configured in the Supabase client
+    }}
           });
 
           if (error) {
